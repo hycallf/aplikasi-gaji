@@ -11,23 +11,31 @@
                 <div class="p-6 text-gray-900">
 
                     <div class="mb-6 flex items-end gap-4">
-                        <div>
-                            <x-input-label for="date-filter" value="Pilih Tanggal" />
-                            <input type="date" name="date" id="date-filter" value="{{ $selectedDate }}"
-                                class="border-gray-300 rounded-md shadow-sm" {{-- Atribut HTMX untuk filter tanggal --}}
-                                hx-get="{{ route('attendances.search') }}" hx-trigger="change"
-                                hx-target="#attendance-table-body" hx-indicator=".htmx-indicator">
-                        </div>
+                        <form method="GET" action="{{ route('attendances.index') }}" id="date-filter-form">
+                            <div>
+                                <x-input-label for="date-filter" value="Pilih Tanggal" />
+                                <input type="date" name="date" id="date-filter" value="{{ $selectedDate }}"
+                                    class="border-gray-300 rounded-md shadow-sm" onchange="this.form.submit()">
+                                {{-- <-- Logika simpel: submit form saat tanggal berubah --}}
+                            </div>
+                        </form>
                         <div>
                             <x-input-label for="search_name" value="Cari Nama Karyawan" />
                             <x-text-input type="text" name="search_name" id="search_name" placeholder="Ketik nama..."
                                 {{-- Atribut HTMX untuk filter nama --}} hx-get="{{ route('attendances.search') }}"
                                 hx-trigger="keyup changed delay:500ms" hx-target="#attendance-table-body"
-                                hx-indicator=".htmx-indicator" />
+                                hx-indicator=".htmx-indicator" hx-include="[name='date']" />
                         </div>
                         {{-- Indikator Loading --}}
-                        <span class="htmx-indicator">
-                            <svg class="animate-spin h-5 w-5 text-gray-500" ...>...</svg>
+                        <span class="htmx-indicator ml-2">
+                            <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
                         </span>
                     </div>
 
@@ -72,15 +80,14 @@
     @push('scripts')
         <script>
             // Fungsi untuk menginisialisasi listener pada baris tabel
+            // Fungsi untuk menampilkan/menyembunyikan kolom Keterangan
             function initAttendanceListeners() {
                 const statusSelects = document.querySelectorAll('.attendance-status');
                 statusSelects.forEach(select => {
-                    // Hapus listener lama untuk menghindari duplikasi
                     select.removeEventListener('change', checkAllStatuses);
-                    // Tambah listener baru
                     select.addEventListener('change', checkAllStatuses);
                 });
-                checkAllStatuses(); // Langsung jalankan saat baris baru dimuat
+                checkAllStatuses();
             }
 
             // Fungsi untuk mengecek semua status (tetap sama)
@@ -112,7 +119,9 @@
             // HTMX akan memicu event ini setelah berhasil menukar konten
             // Kita perlu menginisialisasi ulang listener kita pada konten yang baru
             document.body.addEventListener('htmx:afterSwap', function(event) {
-                initAttendanceListeners();
+                if (event.detail.target.id === 'attendance-table-body') {
+                    initAttendanceListeners();
+                }
             });
         </script>
     @endpush

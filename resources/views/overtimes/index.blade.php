@@ -11,17 +11,19 @@
                 <div class="p-6 text-gray-900">
 
                     <div class="mb-6 flex items-end gap-4">
-                        <div>
-                            <x-input-label for="date-filter" value="Pilih Tanggal" />
-                            <input type="date" name="date" id="date-filter" value="{{ $selectedDate }}"
-                                class="border-gray-300 rounded-md shadow-sm" hx-get="{{ route('overtimes.search') }}"
-                                hx-trigger="change" hx-target="#overtime-table-body" hx-indicator=".htmx-indicator">
-                        </div>
+                        <form method="GET" action="{{ route('overtimes.index') }}" id="date-filter-form">
+                            <div>
+                                <x-input-label for="date-filter" value="Pilih Tanggal" />
+                                <input type="date" name="date" id="date-filter" value="{{ $selectedDate }}"
+                                    class="border-gray-300 rounded-md shadow-sm" onchange="this.form.submit()">
+                            </div>
+                        </form>
                         <div>
                             <x-input-label for="search_name" value="Cari Nama Karyawan" />
                             <x-text-input type="text" name="search_name" id="search_name" placeholder="Ketik nama..."
                                 hx-get="{{ route('overtimes.search') }}" hx-trigger="keyup changed delay:500ms"
-                                hx-target="#overtime-table-body" hx-indicator=".htmx-indicator" />
+                                hx-target="#overtime-table-body" hx-indicator=".htmx-indicator"
+                                hx-include="[name='date']" />
                         </div>
                         <span class="htmx-indicator">
                             <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg"
@@ -76,10 +78,11 @@
             function initOvertimeListeners() {
                 const checkboxes = document.querySelectorAll('.overtime-checkbox');
                 checkboxes.forEach(checkbox => {
-                    checkbox.removeEventListener('change', handleCheckboxChange); // Hapus listener lama
-                    checkbox.addEventListener('change', handleCheckboxChange); // Tambah listener baru
+                    checkbox.removeEventListener('change', handleCheckboxChange);
+                    checkbox.addEventListener('change', handleCheckboxChange);
                 });
             }
+
 
             // Fungsi yang dijalankan saat checkbox berubah
             function handleCheckboxChange(event) {

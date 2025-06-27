@@ -8,6 +8,8 @@ use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\IncentiveController;
 use App\Http\Controllers\DeductionController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -51,6 +53,35 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::get('/overtimes', [OvertimeController::class, 'index'])->name('overtimes.index');
     Route::post('/overtimes', [OvertimeController::class, 'store'])->name('overtimes.store');
     Route::get('/overtimes/search', [OvertimeController::class, 'search'])->name('overtimes.search');
+
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+    Route::post('/payroll', [PayrollController::class, 'process'])->name('payroll.process');
+    Route::get('/payroll/{payroll}/details/{type}', [PayrollController::class, 'getDetails'])->name('payroll.details');
+
+    // Route::get('/report/payroll', [ReportController::class, 'downloadPayrollReport'])->name('report.payroll');
+    // Route::get('/payslip/{payroll}', [ReportController::class, 'downloadPayslip'])->name('payslip.download');
+
+
+    Route::get('/debug-payroll-ajax', function(Illuminate\Http\Request $request) {
+        // Kita akan berpura-pura ini adalah request AJAX
+        // Ini akan memaksa logika `if ($request->ajax())` di controller Anda untuk berjalan.
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+
+        // Ambil bulan & tahun saat ini untuk simulasi
+        $request->merge([
+            'month' => date('m'),
+            'year' => date('Y'),
+        ]);
+
+        // Panggil method index dari PayrollController secara manual
+        try {
+            $controller = new App\Http\Controllers\PayrollController();
+            return $controller->index($request);
+        } catch (Throwable $e) {
+            // Jika ada error apapun, tampilkan dengan Ignition
+            throw $e;
+        }
+    });
     // Tambahkan route-route khusus operator lainnya di sini
 });
 

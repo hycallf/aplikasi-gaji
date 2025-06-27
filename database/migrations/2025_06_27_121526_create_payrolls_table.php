@@ -16,16 +16,24 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
             $table->integer('periode_bulan');
             $table->integer('periode_tahun');
-            $table->decimal('gaji_pokok', 15, 2);
-            $table->decimal('total_tunjangan_transport', 15, 2);
-            $table->decimal('total_upah_lembur', 15, 2);
-            $table->decimal('total_potongan', 15, 2);
-            $table->decimal('gaji_bersih', 15, 2);
-            $table->enum('status_pembayaran', ['diproses', 'terbayar'])->default('diproses');
+            
+            // Komponen Pendapatan
+            $table->decimal('gaji_pokok', 15, 2)->default(0);
+            $table->decimal('total_tunjangan_transport', 15, 2)->default(0);
+            $table->decimal('total_upah_lembur', 15, 2)->default(0);
+            $table->decimal('total_insentif', 15, 2)->default(0); // Untuk event
+            
+            // Komponen Potongan
+            $table->decimal('total_potongan', 15, 2)->default(0);
+            
+            // Hasil Akhir
+            $table->decimal('gaji_kotor', 15, 2)->default(0);
+            $table->decimal('gaji_bersih', 15, 2)->default(0);
+            
             $table->timestamps();
+            $table->unique(['employee_id', 'periode_bulan', 'periode_tahun']);
         });
     }
-
     /**
      * Reverse the migrations.
      */
