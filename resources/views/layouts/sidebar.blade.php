@@ -60,8 +60,10 @@
             Event & Insentif
         </a>
 
-        <a href="#" class="flex items-center px-4 py-2.5 rounded-md ...">
-            <i class="fa-regular fa-square-minus w-5 h-5 mr-3 text-center"></i>
+        <a href="{{ route('deductions.index') }}"
+            class="flex items-center px-4 py-2.5 rounded-md 
+            {{ request()->routeIs('overtimes.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+            <i class="fa-solid fa-file-invoice-dollar fa-fw w-5 h-5 mr-3 text-center"></i>
             Potongan
         </a>
 

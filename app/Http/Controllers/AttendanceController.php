@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\Deduction;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -68,6 +69,28 @@ class AttendanceController extends Controller
                     'description' => $description,
                 ]
             );
+
+            if ($status == 'pulang_awal') {
+                // Buat atau update potongan untuk hari itu jika statusnya pulang awal
+                Deduction::updateOrCreate(
+                    [
+                        'employee_id' => $employeeId,
+                        'tanggal_potongan' => $date,
+                        'sumber' => 'absensi', // Tandai sebagai potongan dari absensi
+                    ],
+                    [
+                        'jenis_potongan' => 'Transport',
+                        'jumlah_potongan' => 10000, // Nominal potongan 10k
+                        'keterangan' => 'Potongan transport karena pulang awal',
+                    ]
+                );
+            } else {
+                // Jika statusnya BUKAN pulang awal, hapus potongan otomatis yang mungkin ada
+                Deduction::where('employee_id', $employeeId)
+                    ->where('tanggal_potongan', $date)
+                    ->where('sumber', 'absensi')
+                    ->delete();
+            }
         }
 
         return redirect()->route('attendances.index', ['date' => $date])->with('success', 'Absensi untuk tanggal ' . $date . ' berhasil disimpan!');

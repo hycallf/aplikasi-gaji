@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
             $table->date('tanggal_potongan');
-            $table->enum('jenis_potongan', ['cuti_tidak_dibayar', 'telat', 'lainnya']);
+            $table->string('jenis_potongan')->nullable();
             $table->decimal('jumlah_potongan', 15, 2);
             $table->string('keterangan')->nullable();
             $table->timestamps();

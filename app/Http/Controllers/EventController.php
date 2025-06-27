@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use DataTables;
 use Carbon\Carbon;
+use App\Models\Employee;
 
 class EventController extends Controller
 {
@@ -130,8 +131,18 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        // Nanti akan kita kembangkan untuk kelola peserta
-        return view('events.show', compact('event'));
+        // Eager load daftar insentif beserta data karyawannya
+        $event->load('incentives.employee');
+
+        // Ambil ID karyawan yang sudah ada di event ini
+        $existingEmployeeIds = $event->incentives->pluck('employee_id');
+
+        // Ambil daftar karyawan yang aktif DAN belum ada di event ini
+        $employees = Employee::where('status', 'aktif')
+                            ->whereNotIn('id', $existingEmployeeIds)
+                            ->get();
+
+        return view('events.show', compact('event', 'employees'));
     }
 
     /**

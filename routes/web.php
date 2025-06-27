@@ -6,6 +6,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\IncentiveController;
+use App\Http\Controllers\DeductionController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -33,6 +35,14 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class);
     Route::resource('events', EventController::class);
+    Route::resource('deductions', DeductionController::class);
+    
+    Route::post('/events/{event}/incentives', [IncentiveController::class, 'store'])->name('events.incentives.store');
+    
+    // DITAMBAHKAN: Route untuk mengupdate insentif spesifik
+    Route::put('/incentives/{incentive}', [IncentiveController::class, 'update'])->name('incentives.update');
+    
+    Route::delete('/incentives/{incentive}', [IncentiveController::class, 'destroy'])->name('incentives.destroy');
 
     Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
     Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
