@@ -1,0 +1,17 @@
+/* Import Font Awesome */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* Import SweetAlert2 */
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.bg-login-custom {
+    background-image: url('/resources/images/gedung.webp'); /* <-- Ganti dengan nama file Anda */
+    background-size: cover; /* Membuat gambar menutupi seluruh area */
+    background-position: center; /* Posisi gambar di tengah */
+    background-repeat: no-repeat; /* Agar gambar tidak berulang */
+}
