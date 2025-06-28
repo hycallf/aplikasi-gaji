@@ -14,6 +14,7 @@
     {{-- Menu Navigasi (tidak ada perubahan di sini) --}}
     <nav class="flex-1 px-2 py-4 space-y-2">
         {{-- ... (isi menu navigasi Anda tetap sama) ... --}}
+
         <a href="{{ route('dashboard') }}"
             class="flex items-center px-4 py-2.5 rounded-md transition duration-200
             {{ request()->routeIs('dashboard') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">

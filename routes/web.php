@@ -10,6 +10,8 @@ use App\Http\Controllers\IncentiveController;
 use App\Http\Controllers\DeductionController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserDashboardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -18,9 +20,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard untuk Operator
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('is_operator');
+    
+    // DITAMBAHKAN: Dashboard untuk Karyawan & Dosen
+    Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -60,6 +66,8 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
 
     Route::get('/report/payroll', [ReportController::class, 'downloadPayrollReport'])->name('report.payroll');
     Route::get('/payslip/{payroll}', [ReportController::class, 'downloadPayslip'])->name('payslip.download');
+
+    Route::get('/dashboard/employee-calendar', [DashboardController::class, 'getEmployeeCalendarData'])->name('dashboard.employee_calendar');
 
 
     // Tambahkan route-route khusus operator lainnya di sini

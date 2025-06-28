@@ -61,8 +61,15 @@
                                             {{ ucfirst($user->role) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                            <a href="#" class="text-red-600 hover:text-red-900 ml-4">Hapus</a>
+                                            {{-- Tambahkan @if untuk mengecek role --}}
+                                            @if ($user->role !== 'operator')
+                                                <div class="flex items-center justify-center">
+                                                    <x-action-button type="edit" :href="route('users.edit', $user->id)" />
+                                                    <x-action-button type="delete" :route="route('users.destroy', $user->id)" />
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-500 italic">Tidak ada aksi</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

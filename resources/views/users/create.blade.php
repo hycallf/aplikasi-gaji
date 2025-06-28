@@ -17,7 +17,7 @@
                                 class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
                                 <option value="">-- Pilih Karyawan --</option>
                                 @foreach ($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->nama_lengkap }}</option>
+                                    <option value="{{ $employee->id }}">{{ $employee->nama }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('employee_id')" class="mt-2" />

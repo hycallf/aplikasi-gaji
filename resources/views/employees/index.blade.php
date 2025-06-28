@@ -104,9 +104,10 @@
                                 <dt class="font-medium text-gray-500 dark:text-gray-400">Riwayat Pendidikan</dt>
                                 <dd class="text-gray-900 dark:text-gray-100"
                                     x-text="employee.detail?.riwayat_pendidikan ?? 'N/A'"></dd>
-                                <dt class="font-medium text-gray-500 dark:text-gray-400 col-span-2">Alamat</dt>
-                                <dd class="text-gray-900 dark:text-gray-100 col-span-2"
-                                    x-text="employee.detail?.alamat || 'N/A'"></dd>
+                                <dt class="font-medium text-gray-500 dark:text-gray-400">Alamat</dt>
+                                {{-- Dihapus: class col-span-2 pada <dd> dan textarea diganti dengan teks biasa --}}
+                                <dd class="text-gray-900 dark:text-gray-100" x-text="employee.detail?.alamat || 'N/A'">
+                                </dd>
                             </dl>
                         </div>
                     </div>

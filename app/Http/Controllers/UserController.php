@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -29,28 +32,110 @@ class UserController extends Controller
     // Menyimpan user baru ke database
     public function store(Request $request)
     {
-        // 1. Validasi
         $request->validate([
-            'employee_id' => 'required|exists:employees,id', // Pastikan karyawan yang dipilih ada
-            'email' => 'required|string|email|max:255|unique:users',
+            'employee_id' => 'required|exists:employees,id,user_id,NULL',
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // 2. Cari data karyawan yang dipilih
-        $employee = Employee::find($request->employee_id);
+        try {
+            DB::beginTransaction();
+            
+            $employee = Employee::find($request->employee_id);
+            
+            $user = User::create([
+                'name' => $employee->nama,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $employee->tipe_karyawan,
+            ]);
 
-        // 3. Buat User baru
-        $user = User::create([
-            'name' => $employee->nama_lengkap, // Nama user diambil dari data karyawan
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $employee->tipe_karyawan, // Role diambil dari tipe karyawan
+            $employee->user_id = $user->id;
+            $employee->save();
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat akun user: ' . $e->getMessage())->withInput();
+        }
+
+        return redirect()->route('users.index')->with('success', 'Akun user berhasil dibuat.');
+    }
+
+    /**
+     * DILENGKAPI: Menampilkan form untuk mengedit user.
+     */
+    public function edit(User $user)
+    {
+        // Proteksi: jangan izinkan edit user dengan role 'operator'
+        if ($user->role === 'operator') {
+            return redirect()->route('users.index')->with('error', 'Akun Operator tidak bisa diedit.');
+        }
+        return view('users.edit', compact('user'));
+    }
+
+    /**
+     * DILENGKAPI: Mengupdate data user.
+     */
+    public function update(Request $request, User $user)
+    {
+        // Proteksi: jangan izinkan update user dengan role 'operator'
+        if ($user->role === 'operator') {
+            return redirect()->route('users.index')->with('error', 'Akun Operator tidak bisa diupdate.');
+        }
+
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
+        
+        // Update nama dan email
+        $user->name = $request->name;
+        $user->email = $request->email;
 
-        // 4. Hubungkan User baru ke data Karyawan
-        $employee->user_id = $user->id;
-        $employee->save();
+        // Hanya update password jika diisi
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
 
-        return redirect()->route('users.index')->with('success', 'Akun user berhasil dibuat dan dihubungkan.');
+        $user->save();
+
+        return redirect()->route('users.index')->with('success', 'Akun user berhasil diperbarui.');
+    }
+
+    /**
+     * DILENGKAPI: Menghapus akun user.
+     */
+    public function destroy(User $user)
+    {
+        // Proteksi: jangan izinkan hapus user dengan role 'operator'
+        if ($user->role === 'operator') {
+            return redirect()->route('users.index')->with('error', 'Akun Operator tidak bisa dihapus.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Cari employee yang terhubung dengan user ini
+            $employee = Employee::where('user_id', $user->id)->first();
+
+            // Jika ada, putuskan hubungannya dengan mengosongkan user_id
+            if ($employee) {
+                $employee->user_id = null;
+                $employee->save();
+            }
+
+            // Hapus user
+            $user->delete();
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus akun user: ' . $e->getMessage());
+        }
+
+        return redirect()->route('users.index')->with('success', 'Akun user berhasil dihapus.');
     }
 }

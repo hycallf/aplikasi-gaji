@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "fresh": "php artisan optimize:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan config:clear && composer dump-autoload",
+        "refresh": "php artisan optimize:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan config:clear"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
