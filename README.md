@@ -64,7 +64,7 @@ Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
     Buka terminal di dalam direktori `htdocs` XAMPP Anda dan jalankan:
 
     ```bash
-    git clone https://URL-GITHUB-ANDA/nama-proyek.git
+    git clone https://github.com/hycallf/aplikasi-gaji.git
     ```
 
 2.  **Masuk ke Folder Proyek**
@@ -161,4 +161,10 @@ Untuk membersihkan semua cache yang mungkin "nyangkut" setelah ada perubahan bes
 
 ```bash
 npm run fresh
+```
+
+atau refresh untuk cleaning lebih cepat:
+
+```bash
+npm run refresh
 ```
