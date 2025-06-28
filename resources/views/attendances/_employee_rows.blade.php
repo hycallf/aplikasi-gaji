@@ -1,7 +1,6 @@
 {{-- resources/views/attendances/_employee_rows.blade.php --}}
-
 @forelse ($employees as $employee)
-    <tr class="border-b">
+    <tr class="border-b dark:border-gray-700">
         <td class="px-4 py-3 font-medium">{{ $employee->nama }}</td>
         <td class="px-4 py-3">
             <select name="attendances[{{ $employee->id }}]"
@@ -24,6 +23,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="3" class="text-center p-4">Tidak ada data karyawan yang cocok dengan pencarian.</td>
+        <td colspan="3" class="text-center p-4">Tidak ada data karyawan yang cocok.</td>
     </tr>
 @endforelse

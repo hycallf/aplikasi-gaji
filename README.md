@@ -1,61 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aplikasi Penggajian Karyawan (Payroll)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi ini adalah sistem manajemen penggajian (payroll) internal berbasis web yang dirancang untuk mengelola seluruh siklus penggajian, mulai dari data karyawan, pencatatan kehadiran, hingga pembuatan laporan dan slip gaji.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+-   **Dashboard Komprehensif:**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+    -   Menampilkan ringkasan data penting (Total Karyawan, Total User, Total Gaji Dibayarkan).
+    -   Grafik interaktif untuk rekap kehadiran, tren pengeluaran gaji (6 bulan), dan komposisi gaji.
+    -   Widget kalender personal untuk memantau absensi per karyawan secara visual.
+    -   Pesan pengingat otomatis untuk operator jika absensi harian belum lengkap.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+-   **Manajemen Karyawan & User (Role-based):**
 
-## Learning Laravel
+    -   CRUD (Create, Read, Update, Delete) untuk data master karyawan (termasuk data detail dan foto).
+    -   CRUD untuk akun login (user) yang terpisah, dengan role `operator`, `karyawan`, dan `dosen`.
+    -   Sistem role manual sederhana yang aman, di mana Operator tidak bisa diedit/dihapus.
+    -   Modal detail karyawan yang asynchronous untuk melihat informasi lengkap tanpa meninggalkan halaman.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+-   **Manajemen Kehadiran Harian:**
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+    -   Tampilan input dengan kalender navigasi visual untuk memilih tanggal.
+    -   Pencarian nama karyawan secara asynchronous (tanpa reload halaman) menggunakan HTMX.
+    -   Status kehadiran: Hadir, Sakit, Izin, Telat, Pulang Awal.
+    -   Input keterangan dinamis untuk status tertentu.
+    -   Constraint untuk mencegah input absensi di masa depan atau pada hari libur.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+-   **Manajemen Lembur, Insentif & Potongan:**
 
-## Laravel Sponsors
+    -   Fitur input lembur harian dengan deskripsi dan nominal upah.
+    -   Fitur "Event" untuk mengelola insentif atau bonus non-rutin dengan kemampuan memilih banyak karyawan sekaligus.
+    -   Fitur "Potongan" yang menangani potongan manual (seperti kasbon) dan potongan otomatis (misal: dari status `pulang_awal` di absensi).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   **Proses Payroll & Laporan:**
 
-### Premium Partners
+    -   Mesin perhitungan gaji otomatis per periode (bulan/tahun).
+    -   Laporan payroll interaktif menggunakan DataTables (search, sort, pagination).
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    *   Modal asynchronous untuk melihat rincian setiap komponen gaji (transport, lembur, dll) langsung dari tabel laporan.
+    *   Fitur **Cetak Laporan Keseluruhan** dan **Cetak Slip Gaji Individual** dalam format PDF.
 
-## Contributing
+-   **Teknologi & Tampilan:**
+    -   Dibangun dengan **Laravel 12**.
+    -   Frontend menggunakan **Laravel Breeze** dengan **Tailwind CSS**.
+    -   Ikon dari **Font Awesome**.
+    -   Notifikasi dan dialog konfirmasi modern dengan **SweetAlert2**.
+    -   Tabel canggih dengan **Yajra DataTables**.
+    -   Kalender interaktif dengan **FullCalendar.js**.
+    -   Request AJAX yang efisien dengan **HTMX**.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Prasyarat
 
-## Code of Conduct
+Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1.  **XAMPP** dengan PHP 8.2 atau lebih baru.
+2.  **Composer** (Manajer dependensi PHP).
+3.  **Node.js & NPM** (Manajer paket frontend).
+4.  **Git** (Sistem kontrol versi).
 
-## Security Vulnerabilities
+## Langkah-langkah Instalasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1.  **Clone Repository Proyek**
+    Buka terminal di dalam direktori `htdocs` XAMPP Anda dan jalankan:
 
-## License
+    ```bash
+    git clone https://URL-GITHUB-ANDA/nama-proyek.git
+    ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+2.  **Masuk ke Folder Proyek**
+
+    ```bash
+    cd nama-proyek
+    ```
+
+3.  **Install Dependensi PHP**
+
+    ```bash
+    composer install
+    ```
+
+4.  **Siapkan File Environment**
+    Copy file `.env.example` menjadi `.env`.
+
+    ```bash
+    copy .env.example .env
+    ```
+
+5.  **Konfigurasi Database**
+
+    1.  Buka **phpMyAdmin** dan buat database baru yang masih kosong (misalnya `db_payroll`).
+    2.  Buka file `.env` dan sesuaikan konfigurasi database:
+        ```ini
+        DB_CONNECTION=mysql
+        DB_HOST=127.0.0.1
+        DB_PORT=3306
+        DB_DATABASE=db_payroll
+        DB_USERNAME=root
+        DB_PASSWORD=
+        ```
+
+6.  **Generate Kunci Aplikasi**
+
+    ```bash
+    php artisan key:generate
+    ```
+
+7.  **Buat Struktur Database & Isi Data Awal**
+    Perintah ini akan membuat semua tabel dan mengisinya dengan data awal (seperti role).
+
+    ```bash
+    php artisan migrate --seed
+    ```
+
+    _Jika Anda menghadapi error, coba jalankan `php artisan migrate:fresh --seed` untuk menghapus semua tabel lama terlebih dahulu._
+
+8.  **Buat Symbolic Link untuk Storage**
+    Penting agar file yang diupload (seperti foto karyawan) bisa diakses.
+
+    ```bash
+    php artisan storage:link
+    ```
+
+9.  **Install Dependensi Frontend**
+
+    ```bash
+    npm install
+    ```
+
+10. **Compile Aset Frontend (untuk Production)**
+    Jika Anda ingin langsung menjalankan versi production, jalankan perintah ini sekali.
+    ```bash
+    npm run build
+    ```
+
+## Menjalankan Aplikasi untuk Development
+
+Untuk pengembangan sehari-hari, Anda perlu menjalankan **dua server** secara bersamaan di **dua terminal terpisah**:
+
+1.  **Terminal 1 (Backend Laravel):**
+    ```bash
+    php artisan serve
+    ```
+2.  **Terminal 2 (Frontend Vite):**
+    ```bash
+    npm run dev
+    ```
+
+Buka browser Anda dan kunjungi alamat: **`http://127.0.0.1:8000`**
+
+## Akun Default
+
+Gunakan akun Operator default yang dibuat oleh Seeder untuk login pertama kali:
+
+-   **Email:** `operator@aplikasi.com`
+-   **Password:** `password123`
+
+## Perintah Bantuan
+
+Untuk membersihkan semua cache yang mungkin "nyangkut" setelah ada perubahan besar, jalankan perintah ini:
+
+```bash
+npm run fresh
+```
