@@ -64,7 +64,7 @@ public function index(Request $request)
             // Kolom Aksi untuk Slip Gaji
             ->addColumn('action', function($row){
                  // Nanti link ini akan kita buat
-                return '<button class="text-gray-400 cursor-not-allowed">Cetak Slip</button>';
+                return '<a href="'.route('payslip.download', $row->id).'" target="_blank" class="text-green-600 hover:underline">Cetak Slip</a>';
             })
             ->rawColumns(['transport', 'lembur', 'insentif', 'potongan', 'gaji_bersih', 'action'])
             ->make(true);
@@ -184,7 +184,7 @@ public function index(Request $request)
 
         switch ($type) {
             case 'transport':
-                $statuses = ['hadir', 'telat', 'pulang_awal'];
+                $statuses = ['hadir', 'pulang_awal'];
                 // DITAMBAHKAN: orderBy('date', 'asc') untuk mengurutkan dari tanggal terawal
                 $data = Attendance::where('employee_id', $employee_id)
                     ->whereYear('date', $year)->whereMonth('date', $month)

@@ -169,6 +169,14 @@
                     // Biarkan form submit seperti biasa
                 });
             });
+
+            $('#print-report-btn').on('click', function(e) {
+                e.preventDefault();
+                var month = $('#month').val();
+                var year = $('#year').val();
+                // Buka di tab baru
+                window.open(`{{ route('report.payroll') }}?month=${month}&year=${year}`, '_blank');
+            });
         </script>
     @endpush
 </x-app-layout>
