@@ -2,6 +2,12 @@
 
 Aplikasi ini adalah sistem manajemen penggajian (payroll) internal berbasis web yang dirancang untuk mengelola seluruh siklus penggajian, mulai dari data karyawan, pencatatan kehadiran, hingga pembuatan laporan dan slip gaji.
 
+## Lisensi
+
+Aplikasi ini dilindungi oleh lisensi komersial. Anda tidak diizinkan untuk menjual kembali atau mendistribusikan ulang source code tanpa izin tertulis dari pengembang.
+
+Copyright (c) [2025] [@hycallf].
+
 ## Fitur Utama
 
 -   **Dashboard Komprehensif:**
