@@ -54,7 +54,15 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
+                                        <td>
+                                            {{ $user->email }}
+                                            @if (!$user->hasVerifiedEmail())
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold leading-5 rounded-full bg-yellow-100 text-yellow-800">
+                                                    Belum Diverifikasi
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{-- Kode ini untuk mengambil satu string role dari kolom database --}}
                                             {{-- ucfirst() digunakan agar huruf pertamanya menjadi besar, misal 'operator' -> 'Operator' --}}

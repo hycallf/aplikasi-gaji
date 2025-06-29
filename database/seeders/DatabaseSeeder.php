@@ -15,12 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $operatorUser = User::create([
-            'name' => 'Operator Payroll',
-            'email' => 'operator@aplikasi.com',
-            'password' => bcrypt('password123'),
-            'role' => 'operator'
-        ]);
+        $this->call(OperatorSeeder::class);
 
         
     }

@@ -17,29 +17,55 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
+    // Cek apakah user sudah login
+    if (Auth::check()) {
+        $user = Auth::user();
+        // Jika rolenya operator, arahkan ke dashboard admin
+        if ($user->role === 'operator') {
+            return redirect()->route('dashboard');
+        }
+        // Jika bukan, arahkan ke dashboard user biasa
+        else {
+            return redirect()->route('user.dashboard');
+        }
+    }
+
+    // Jika tidak ada yang login, tampilkan halaman welcome
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard untuk Operator
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('is_operator');
-    
-    // DITAMBAHKAN: Dashboard untuk Karyawan & Dosen
-    Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
-});
-
 Route::middleware('auth')->group(function () {
+    Route::get('verify-email', [\App\Http\Controllers\Auth\EmailVerificationPromptController::class, '__invoke'])
+                ->name('verification.notice');
+
+    Route::get('verify-email/{id}/{hash}', [\App\Http\Controllers\Auth\VerifyEmailController::class, '__invoke'])
+                ->middleware(['signed', 'throttle:6,1'])
+                ->name('verification.verify');
+
+    Route::post('email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationNotificationController::class, 'store'])
+                ->middleware('throttle:6,1')
+                ->name('verification.send');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/payslip/{payroll}', [ReportController::class, 'downloadPayslip'])->name('payslip.download');
 });
 
-// routes/web.php
+// routes karyawan
+
+Route::middleware(['auth', 'verified', 'is_not_operator'])->group(function () {
+    Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+
+     Route::get('/my-history/payroll', [UserDashboardController::class, 'payrollHistory'])->name('user.payroll.history');
+     
+    // Jika ada halaman lain khusus karyawan/dosen, letakkan di sini juga.
+});
 
 // Hanya bisa diakses oleh user dengan role 'operator'
 
-// routes/web.php
 Route::middleware(['auth', 'is_operator'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('is_operator');
     Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class);
     Route::resource('events', EventController::class);
@@ -65,7 +91,6 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::get('/payroll/{payroll}/details/{type}', [PayrollController::class, 'getDetails'])->name('payroll.details');
 
     Route::get('/report/payroll', [ReportController::class, 'downloadPayrollReport'])->name('report.payroll');
-    Route::get('/payslip/{payroll}', [ReportController::class, 'downloadPayslip'])->name('payslip.download');
 
     Route::get('/dashboard/employee-calendar', [DashboardController::class, 'getEmployeeCalendarData'])->name('dashboard.employee_calendar');
 

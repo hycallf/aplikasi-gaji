@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -36,7 +38,8 @@ class UserController extends Controller
             'employee_id' => 'required|exists:employees,id,user_id,NULL',
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ], [
+            'employee_id.exists' => 'Karyawan yang dipilih tidak valid atau sudah memiliki akun.']);
 
         try {
             DB::beginTransaction();
@@ -49,6 +52,10 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => $employee->tipe_karyawan,
             ]);
+
+            if ($user->role !== 'operator') {
+            $user->sendEmailVerificationNotification();
+        }
 
             $employee->user_id = $user->id;
             $employee->save();

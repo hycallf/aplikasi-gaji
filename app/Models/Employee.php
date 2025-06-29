@@ -14,7 +14,6 @@ class Employee extends Model
         'nama', // Asumsi Anda punya kolom ini
         'jabatan',
         'tipe_karyawan',
-        'tanggal_masuk',
         'gaji_pokok',
         'transport',
         'status'
@@ -26,7 +25,8 @@ class Employee extends Model
     }
 
     public function detail(): HasOne
-{
-    return $this->hasOne(EmployeeDetail::class);
-}
+    {
+        return $this->hasOne(EmployeeDetail::class);
+    }
+    
 }

@@ -158,9 +158,15 @@
                     <td>Insentif</td>
                     <td class="text-right">Rp {{ number_format($payroll->total_insentif, 0, ',', '.') }}</td>
                 </tr>
+                {{-- Loop untuk menampilkan setiap detail insentif --}}
                 @foreach ($incentives as $incentive)
                     <tr class="sub-item">
-                        <td colspan="2">{{ $incentive->event->nama_event }}</td>
+                        {{-- Tampilkan nama event dan jumlahnya --}}
+                        <td colspan="2">
+                            {{ $incentive->event->nama_event }};
+                            (Rp
+                            {{ number_format($incentive->jumlah_insentif, 0, ',', '.') }})
+                        </td>
                     </tr>
                 @endforeach
             @endif

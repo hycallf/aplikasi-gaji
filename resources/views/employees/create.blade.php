@@ -76,12 +76,7 @@
                                         name="tanggal_masuk" :value="old('tanggal_masuk')" required />
                                     <x-input-error :messages="$errors->get('tanggal_masuk')" class="mt-2" />
                                 </div>
-                                <div class="mt-4">
-                                    <x-input-label for="alamat" value="Alamat KTP" />
-                                    <textarea name="alamat" id="alamat" rows="3"
-                                        class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">{{ old('alamat') }}</textarea>
-                                    <x-input-error :messages="$errors->get('alamat')" class="mt-2" />
-                                </div>
+
                                 <div class="mt-4">
                                     <x-input-label for="no_hp" value="Nomor HP" />
                                     <x-text-input id="no_hp" class="block mt-1 w-full" type="text" name="no_hp"
@@ -97,8 +92,6 @@
                                         <option value="Menikah"
                                             {{ old('status_pernikahan') == 'Menikah' ? 'selected' : '' }}>Menikah
                                         </option>
-                                        <option value="Cerai"
-                                            {{ old('status_pernikahan') == 'Cerai' ? 'selected' : '' }}>Cerai</option>
                                     </select>
                                     <x-input-error :messages="$errors->get('status_pernikahan')" class="mt-2" />
                                 </div>
@@ -109,11 +102,47 @@
                                     <x-input-error :messages="$errors->get('jumlah_anak')" class="mt-2" />
                                 </div>
 
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <x-input-label for="pendidikan_terakhir" value="Pendidikan Terakhir" />
+                                        <select name="pendidikan_terakhir" id="pendidikan_terakhir"
+                                            class="block mt-1 w-full border-gray-300 rounded-md">
+                                            <option value="">-- Pilih --</option>
+                                            <option value="SMA/SMK Sederajat"
+                                                {{ old('pendidikan_terakhir') == 'SMA/SMK Sederajat' ? 'selected' : '' }}>
+                                                SMA/SMK
+                                                Sederajat</option>
+                                            <option value="D3"
+                                                {{ old('pendidikan_terakhir') == 'D3' ? 'selected' : '' }}>D3</option>
+                                            <option value="S1"
+                                                {{ old('pendidikan_terakhir') == 'S1' ? 'selected' : '' }}>S1</option>
+                                            <option value="S2"
+                                                {{ old('pendidikan_terakhir') == 'S2' ? 'selected' : '' }}>S2</option>
+                                            <option value="S3"
+                                                {{ old('pendidikan_terakhir') == 'S3' ? 'selected' : '' }}>S3</option>
+                                        </select>
+                                        <x-input-error :messages="$errors->get('pendidikan_terakhir')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="jurusan" value="Jurusan" />
+                                        <x-text-input id="jurusan" class="block mt-1 w-full" type="text"
+                                            name="jurusan" :value="old('jurusan')" />
+                                        <x-input-error :messages="$errors->get('jurusan')" class="mt-2" />
+                                    </div>
+                                </div>
+
                                 <div class="mt-4">
-                                    <x-input-label for="riwayat_pendidikan" value="Riwayat Pendidikan" />
-                                    <x-text-input id="riwayat_pendidikan" class="block mt-1 w-full" type="text"
-                                        name="riwayat_pendidikan" :value="old('riwayat_pendidikan')" />
-                                    <x-input-error :messages="$errors->get('riwayat_pendidikan')" class="mt-2" />
+                                    <x-input-label for="domisili" value="Domisili (kota)" />
+                                    <x-text-input id="domisili" class="block mt-1 w-full" type="text"
+                                        name="domisili" :value="old('domisili')" />
+                                    <x-input-error :messages="$errors->get('domisili')" class="mt-2" />
+                                </div>
+
+                                <div class="mt-4">
+                                    <x-input-label for="alamat" value="Alamat KTP" />
+                                    <textarea name="alamat" id="alamat" rows="3"
+                                        class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">{{ old('alamat') }}</textarea>
+                                    <x-input-error :messages="$errors->get('alamat')" class="mt-2" />
                                 </div>
 
                                 <div class="mt-4">

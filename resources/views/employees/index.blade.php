@@ -80,8 +80,22 @@
                                 <dd class="text-gray-900 dark:text-gray-100"
                                     x-text="employee.user?.email || 'Tidak ada'"></dd>
                                 <dt class="font-medium text-gray-500 dark:text-gray-400">Status Akun</dt>
-                                <dd class="font-semibold" x-text="employee.user ? 'Aktif' : 'Belum Dibuat'"
-                                    :class="employee.user ? 'text-green-600' : 'text-red-600'"></dd>
+                                <dd class="font-semibold">
+                                    {{-- Gunakan template untuk menampilkan status secara dinamis --}}
+                                    <template x-if="employee.user">
+                                        {{-- Jika user ada, cek status verifikasinya --}}
+                                        <span x-text="employee.user.email_verified_at ? 'Aktif' : 'Belum Diverifikasi'"
+                                            :class="{
+                                                'text-green-600 dark:text-green-400': employee.user.email_verified_at,
+                                                'text-yellow-600 dark:text-yellow-400': !employee.user.email_verified_at
+                                            }">
+                                        </span>
+                                    </template>
+                                    <template x-if="!employee.user">
+                                        {{-- Jika user tidak ada sama sekali --}}
+                                        <span class="text-red-600 dark:text-red-400">Belum Dibuat</span>
+                                    </template>
+                                </dd>
                             </dl>
                         </div>
                         {{-- Data Personal --}}
@@ -101,9 +115,10 @@
                                 <dt class="font-medium text-gray-500 dark:text-gray-400">Jumlah Anak</dt>
                                 <dd class="text-gray-900 dark:text-gray-100"
                                     x-text="employee.detail?.jumlah_anak ?? 'N/A'"></dd>
-                                <dt class="font-medium text-gray-500 dark:text-gray-400">Riwayat Pendidikan</dt>
-                                <dd class="text-gray-900 dark:text-gray-100"
-                                    x-text="employee.detail?.riwayat_pendidikan ?? 'N/A'"></dd>
+                                <dt class="font-medium text-gray-500">Pendidikan</dt>
+                                <dd class="text-gray-900"
+                                    x-text="`${employee.detail?.pendidikan_terakhir || 'N/A'} - ${employee.detail?.jurusan || 'N/A'}`">
+                                </dd>
                                 <dt class="font-medium text-gray-500 dark:text-gray-400">Alamat</dt>
                                 {{-- Dihapus: class col-span-2 pada <dd> dan textarea diganti dengan teks biasa --}}
                                 <dd class="text-gray-900 dark:text-gray-100" x-text="employee.detail?.alamat || 'N/A'">

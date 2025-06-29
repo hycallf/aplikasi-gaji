@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'is_operator' => \App\Http\Middleware\IsOperator::class,
+            'is_not_operator' => \App\Http\Middleware\IsNotOperator::class,
         ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

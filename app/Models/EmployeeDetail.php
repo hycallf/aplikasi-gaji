@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EmployeeDetail extends Model
 {
     protected $fillable = [
-    'employee_id', 'foto', 'alamat', 'domisili', 'no_hp', 'no_ktp', 
-    'status_pernikahan', 'jumlah_anak', 'tanggal_masuk'
+    'employee_id', 'foto', 'alamat', 'domisili', 'no_hp', 
+    'status_pernikahan', 'jumlah_anak', 'tanggal_masuk','pendidikan_terakhir', 
+    'jurusan'
     ];
 
     public function employee(): BelongsTo

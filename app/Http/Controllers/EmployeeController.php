@@ -86,10 +86,13 @@ class EmployeeController extends Controller
             'nama' => 'required|string|max:255', // DIUBAH: menjadi 'nama'
             'jabatan' => 'required|string|max:255',
             'tipe_karyawan' => 'required|in:karyawan,dosen',
-            'tanggal_masuk' => 'required|date',
             'gaji_pokok' => 'required|numeric', // DIUBAH: menjadi 'gaji_pokok'
             'transport' => 'required|numeric',
+            'tanggal_masuk' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'pendidikan_terakhir' => 'nullable|string',
+            'jurusan' => 'nullable|string|max:255',
+            'domisili' => 'nullable|string|max:255',
             // Tambahkan validasi lain sesuai kebutuhan...
         ]);
 
@@ -125,7 +128,8 @@ class EmployeeController extends Controller
                 'domisili' => $request->domisili,
                 'no_hp' => $request->no_hp,
                 'status_pernikahan' => $request->status_pernikahan,
-                'riwayat_pendidikan' => $request->riwayat_pendidikan,
+                'pendidikan_terakhir' => $request->pendidikan_terakhir,
+                'jurusan' => $request->jurusan,
                 'jumlah_anak' => $request->jumlah_anak,
             ]);
 
