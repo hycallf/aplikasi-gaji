@@ -199,14 +199,12 @@ public function index(Request $request)
                 break;
 
             case 'insentif':
-                // DITAMBAHKAN: orderBy pada relasi event
-                $data = Incentive::with(['event' => function ($query) {
-                        $query->orderBy('start_date', 'asc'); // <-- Mengurutkan data
-                    }])
+                $data = Incentive::with('event')
                     ->where('employee_id', $employee_id)
-                    ->whereHas('event', function ($q) use ($year, $month) {
-                        $q->whereYear('start_date', $year)->whereMonth('start_date', $month);
-                    })->get();
+                    ->whereYear('tanggal_insentif', $year)
+                    ->whereMonth('tanggal_insentif', $month)
+                    ->orderBy('tanggal_insentif', 'asc')
+                    ->get();
                 $total = $data->sum('jumlah_insentif');
                 break;
 
