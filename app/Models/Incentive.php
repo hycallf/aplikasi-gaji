@@ -10,7 +10,9 @@ class Incentive extends Model
     protected $fillable = [
         'event_id',
         'employee_id',
+        'tanggal_insentif', // <-- DITAMBAHKAN
         'jumlah_insentif',
+        'deskripsi',
     ];
 
     public function employee(): BelongsTo

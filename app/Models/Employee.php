@@ -16,6 +16,8 @@ class Employee extends Model
         'tipe_karyawan',
         'gaji_pokok',
         'transport',
+        'tunjangan',
+        'departemen',
         'status'
     ];
 

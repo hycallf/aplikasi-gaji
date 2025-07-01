@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
+use App\Notifications\UserInvitationNotification;
 
 class UserController extends Controller
 {
@@ -53,9 +54,7 @@ class UserController extends Controller
                 'role' => $employee->tipe_karyawan,
             ]);
 
-            if ($user->role !== 'operator') {
-            $user->sendEmailVerificationNotification();
-        }
+            $user->notify(new UserInvitationNotification());
 
             $employee->user_id = $user->id;
             $employee->save();
@@ -67,9 +66,24 @@ class UserController extends Controller
             return back()->with('error', 'Gagal membuat akun user: ' . $e->getMessage())->withInput();
         }
 
-        return redirect()->route('users.index')->with('success', 'Akun user berhasil dibuat.');
+        return redirect()->route('users.index')->with('success', 'Undangan untuk mengatur akun telah dikirim ke karyawan.');
     }
 
+    public function resendInvitation(User $user)
+    {
+        // Proteksi: hanya kirim ulang jika email belum diverifikasi dan bukan operator
+        if ($user->hasVerifiedEmail() || $user->role === 'operator') {
+            return back()->with('error', 'Tidak dapat mengirim ulang undangan untuk user ini.');
+        }
+
+        try {
+            $user->notify(new UserInvitationNotification());
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengirim email undangan: ' . $e->getMessage());
+        }
+        
+        return back()->with('success', 'Email undangan berhasil dikirim ulang ke ' . $user->email);
+    }
     /**
      * DILENGKAPI: Menampilkan form untuk mengedit user.
      */

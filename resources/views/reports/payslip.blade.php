@@ -95,37 +95,68 @@
                 <td colspan="2">
                     <table>
                         <tr>
-                            <td class="title">
-                                <x-pdf-logo width="100" />
-                            </td>
-                            <td class="title" style="vertical-align: middle;">
-                                STIMIK Mercusuar
-                            </td>
-                            <td class="text-right">
-                                <span class="bold">SLIP GAJI</span><br>
-                                Periode:
-                                {{ \Carbon\Carbon::create($payroll->periode_tahun, $payroll->periode_bulan)->isoFormat('MMMM YYYY') }}<br>
-                                Tanggal Cetak: {{ \Carbon\Carbon::now()->isoFormat('D MMMM YYYY') }}
-                            </td>
+                            <td colspan="2" class="text-right">Tanggal Cetak:
+                                {{ \Carbon\Carbon::now()->isoFormat('D MMMM YYYY') }}</td>
                         </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="information">
-                <td colspan="2">
-                    <table>
                         <tr>
-                            <td>
-                                <span class="bold">{{ $payroll->employee->nama }}</span><br>
-                                {{ $payroll->employee->jabatan }}
+                            <td class="title" style="width: 10%; vertical-align: top;">
+                                <x-pdf-logo :logoPath="$companyProfile?->logo" />
                             </td>
+                            <td style="vertical-align: middle; padding-left: 20px;">
+                                <div style="font-size: 18px; font-weight: bold;">
+                                    {{ $companyProfile->nama_perusahaan ?? 'Nama Perusahaan' }}</div>
+                                <div style="font-size: 12px;">{{ $companyProfile->alamat ?? 'Alamat Perusahaan' }}</div>
+                                <div style="font-size: 12px;">{{ $companyProfile->email_kontak ?? '' }}</div>
+                            </td>
+
                         </tr>
                     </table>
                 </td>
             </tr>
+            <tr>
+                <td colspan="2" style="padding-top: 10px; padding-bottom: 20px; text-align: center;">
+                    {{-- Tabel baru di dalam untuk menampung konten agar bisa diatur lebarnya --}}
+                    <table style="width: 50%; margin: auto; text-align: left; border: 1px solid #ddd;">
 
+                        {{-- Bagian Header: "SLIP GAJI" tanpa border bawah --}}
+                        <thead style="background-color: #eee;">
+                            <tr>
+                                <th colspan="2" style="text-align: center; padding: 8px; font-size: 14px;">
+                                    SLIP GAJI KARYAWAN
+                                </th>
+                            </tr>
+                        </thead>
+
+                        {{-- Bagian Body: Data karyawan dengan border di setiap baris --}}
+                        <tbody>
+                            <tr style="border-top: 1px solid #ddd;">
+                                <td style="width: 40%; padding: 8px;">Nama Karyawan</td>
+                                <td style="width: 60%; padding: 8px;"><span class="bold">:
+                                        {{ $payroll->employee->nama }}</span></td>
+                            </tr>
+                            <tr style="border-top: 1px solid #ddd;">
+                                <td style="padding: 8px;">Jabatan</td>
+                                <td style="padding: 8px;"><span class="bold">:
+                                        {{ $payroll->employee->jabatan }}</span></td>
+                            </tr>
+                            <tr style="border-top: 1px solid #ddd;">
+                                <td style="padding: 8px;">Departemen</td>
+                                <td style="padding: 8px;"><span class="bold">:
+                                        {{ $payroll->employee->departemen }}</span></td>
+                            </tr>
+                            <tr style="border-top: 1px solid #ddd;">
+                                <td style="padding: 8px;">Periode</td>
+                                <td style="padding: 8px;">:
+                                    {{ \Carbon\Carbon::create($payroll->periode_tahun, $payroll->periode_bulan)->isoFormat('MMMM Y') }}
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </td>
+            </tr>
             <tr class="heading">
-                <td>Pendapatan</td>
+                <td>Gaji</td>
                 <td class="text-right">Jumlah</td>
             </tr>
             <tr class="item">
@@ -136,39 +167,56 @@
                 <td>Tunjangan Transport ({{ $attendances->count() }} hari)</td>
                 <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
             </tr>
+            @php
+                // Hitung sub-total gaji + tunjangan
+                $totalGajiTunjangan = $payroll->gaji_pokok + $payroll->total_tunjangan_transport;
+            @endphp
+            <tr class="item bold">
+                <td>Total Gaji</td>
+                <td class="text-right">Rp {{ number_format($totalGajiTunjangan, 0, ',', '.') }}</td>
+            </tr>
 
-            {{-- Rincian Lembur --}}
-            @if ($overtimes->count() > 0)
-                <tr class="item">
-                    <td>Upah Lembur</td>
-                    <td class="text-right">Rp {{ number_format($payroll->total_upah_lembur, 0, ',', '.') }}</td>
-                </tr>
-                @foreach ($overtimes as $overtime)
-                    <tr class="sub-item">
-                        <td colspan="2">{{ \Carbon\Carbon::parse($overtime->tanggal_lembur)->isoFormat('D MMM') }}:
-                            {{ $overtime->deskripsi_lembur }} (Rp
-                            {{ number_format($overtime->upah_lembur, 0, ',', '.') }})</td>
+            @if ($payroll->total_upah_lembur > 0 || $payroll->total_insentif > 0)
+                @if ($payroll->total_upah_lembur > 0)
+                    <tr class="heading">
+                        <td>Bonus</td>
+                        <td class="text-right">Jumlah</td>
                     </tr>
-                @endforeach
-            @endif
+                    <tr class="item">
+                        <td>Upah Lembur</td>
+                        <td class="text-right">Rp {{ number_format($payroll->total_upah_lembur, 0, ',', '.') }}</td>
+                    </tr>
+                    {{-- @foreach ($overtimes as $overtime)
+                        <tr class="sub-item">
+                            <td colspan="2">
+                                {{ \Carbon\Carbon::parse($overtime->tanggal_lembur)->isoFormat('D MMM') }}:
+                                {{ $overtime->deskripsi_lembur }} (Rp
+                                {{ number_format($overtime->upah_lembur, 0, ',', '.') }})</td>
+                        </tr>
+                    @endforeach --}}
+                @endif
 
-            {{-- DITAMBAHKAN: Rincian Insentif --}}
-            @if ($incentives->count() > 0)
-                <tr class="item">
-                    <td>Insentif</td>
-                    <td class="text-right">Rp {{ number_format($payroll->total_insentif, 0, ',', '.') }}</td>
+                @if ($payroll->total_insentif > 0)
+                    {{-- <tr class="item">
+                        <td>Insentif</td>
+                        <td class="text-right">Rp {{ number_format($payroll->total_insentif, 0, ',', '.') }}</td>
+                    </tr> --}}
+                    @foreach ($incentives as $incentive)
+                        <tr class="item">
+                            <td colspan="2">{{ $incentive->event->nama_event }} <span style="float: right;">Rp
+                                    {{ number_format($incentive->jumlah_insentif, 0, ',', '.') }}</span></td>
+                        </tr>
+                    @endforeach
+                @endif
+
+                @php
+                    // Hitung sub-total bonus
+                    $totalBonus = $payroll->total_upah_lembur + $payroll->total_insentif;
+                @endphp
+                <tr class="item bold">
+                    <td>Total Bonus</td>
+                    <td class="text-right">Rp {{ number_format($totalBonus, 0, ',', '.') }}</td>
                 </tr>
-                {{-- Loop untuk menampilkan setiap detail insentif --}}
-                @foreach ($incentives as $incentive)
-                    <tr class="sub-item">
-                        {{-- Tampilkan nama event dan jumlahnya --}}
-                        <td colspan="2">
-                            {{ $incentive->event->nama_event }};
-                            (Rp
-                            {{ number_format($incentive->jumlah_insentif, 0, ',', '.') }})
-                        </td>
-                    </tr>
-                @endforeach
             @endif
 
             <tr class="total">
@@ -204,6 +252,33 @@
             <tr class="total" style="background-color: #f0f9ff;">
                 <td class="bold">GAJI DITERIMA (GAJI BERSIH)</td>
                 <td class="text-right bold">Rp {{ number_format($payroll->gaji_bersih, 0, ',', '.') }}</td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; margin-top: 50px; text-align: center;">
+            <tr>
+                {{-- Kolom Kiri: Karyawan --}}
+                <td style="width: 50%;">
+                    <div>Diterima oleh,</div>
+                    <div style="margin-top: 60px;">
+                        <span class="bold" style="border-bottom: 1px solid #333; padding: 0 40px;">
+                            {{ $payroll->employee->nama }}
+                        </span>
+                    </div>
+                    <div>(Karyawan)</div>
+                </td>
+
+                {{-- Kolom Kanan: Administrasi/Pimpinan --}}
+                <td style="width: 50%;">
+                    <div>Mengetahui,</div>
+                    <div style="margin-top: 60px;">
+                        <span class="bold" style="border-bottom: 1px solid #333; padding: 0 40px;">
+                            {{-- DIUBAH: Mengambil nama perwakilan secara dinamis --}}
+                            {{ $companyProfile->nama_perwakilan ?? '(...........................)' }}
+                        </span>
+                    </div>
+                    <div>(PLT Kepala BAUK)</div>
+                </td>
             </tr>
         </table>
     </div>

@@ -54,13 +54,36 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
-                                        <td>
-                                            {{ $user->email }}
-                                            @if (!$user->hasVerifiedEmail())
-                                                <span
-                                                    class="px-2 py-1 text-xs font-semibold leading-5 rounded-full bg-yellow-100 text-yellow-800">
-                                                    Belum Diverifikasi
-                                                </span>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-200">{{ $user->email }}
+                                            </div>
+
+                                            {{-- Logika untuk menampilkan badge dan tombol --}}
+                                            @if ($user->role !== 'operator')
+                                                @if (!$user->hasVerifiedEmail())
+                                                    <div class="flex items-center gap-x-2 mt-1">
+                                                        <span
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                            Belum Diverifikasi
+                                                        </span>
+
+                                                        {{-- Form dengan tombol Kirim Ulang --}}
+                                                        <form action="{{ route('users.resend_invitation', $user->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <x-primary-button>
+                                                                Resend Verification
+                                                            </x-primary-button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center gap-x-2 mt-1">
+                                                        <span
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                            Terverifikasi
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

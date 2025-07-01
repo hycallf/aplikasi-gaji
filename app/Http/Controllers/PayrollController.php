@@ -92,6 +92,7 @@ public function index(Request $request)
         return view('payroll.index', compact('selectedMonth', 'selectedYear'));
     }
 
+    
     public function process(Request $request)
     {
         $request->validate([
@@ -99,30 +100,32 @@ public function index(Request $request)
             'year' => 'required|integer|min:2000',
         ]);
 
-        $month = $request->month;
-        $year = $request->year;
+        // Cukup panggil method private yang sudah ada
+        $this->calculateAndStorePayroll($request->month, $request->year);
 
-        // Ambil semua karyawan aktif
+        return redirect()->route('payroll.index', ['month' => $request->month, 'year' => $request->year])
+                         ->with('success', 'Payroll untuk periode ' . Carbon::create($request->year, $request->month)->isoFormat('MMMM Y') . ' berhasil diproses ulang.');
+    }
+
+    private function calculateAndStorePayroll($month, $year)
+    {
         $employees = Employee::where('status', 'aktif')->get();
 
         DB::beginTransaction();
         try {
             foreach ($employees as $employee) {
-                // 1. Gaji Pokok
-                $gajiPokok = $employee->gaji_pokok;
+                // 1. Gaji Pokok (dengan nilai default 0 jika null)
+                $gajiPokok = $employee->gaji_pokok ?? 0;
 
                 // 2. Hitung Tunjangan Transport
-                // Definisikan semua status yang berhak dapat transport
                 $statusesDapatTransport = ['hadir', 'pulang_awal'];
-
                 $jumlahHariMasuk = Attendance::where('employee_id', $employee->id)
                     ->whereYear('date', $year)->whereMonth('date', $month)
-                    // Ganti 'where' menjadi 'whereIn' untuk mencari beberapa status
                     ->whereIn('status', $statusesDapatTransport)->count();
-                    
-                $totalTransport = $jumlahHariMasuk * $employee->transport;
+                // Pastikan nilai transport tidak null sebelum dikalikan
+                $totalTransport = $jumlahHariMasuk * ($employee->transport ?? 0);
 
-                // 3. Hitung Total Lembur
+                // 3. Hitung Total Lembur (sum() sudah aman, akan return 0 jika kosong)
                 $totalLembur = Overtime::where('employee_id', $employee->id)
                     ->whereYear('tanggal_lembur', $year)->whereMonth('tanggal_lembur', $month)
                     ->sum('upah_lembur');
@@ -144,11 +147,7 @@ public function index(Request $request)
 
                 // 7. Simpan atau Update ke tabel payrolls
                 Payroll::updateOrCreate(
-                    [
-                        'employee_id' => $employee->id,
-                        'periode_bulan' => $month,
-                        'periode_tahun' => $year,
-                    ],
+                    ['employee_id' => $employee->id, 'periode_bulan' => $month, 'periode_tahun' => $year],
                     [
                         'gaji_pokok' => $gajiPokok,
                         'total_tunjangan_transport' => $totalTransport,
@@ -163,16 +162,11 @@ public function index(Request $request)
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal memproses gaji: ' . $e->getMessage());
+            // Lemparkan kembali error agar bisa di-debug dengan jelas
+            throw $e;
         }
-
-        return redirect()->route('payroll.index', ['month' => $month, 'year' => $year])
-                         ->with('success', 'Payroll untuk periode ' . Carbon::create($year, $month)->isoFormat('MMMM YYYY') . ' berhasil diproses.');
     }
 
-    // app/Http/Controllers/PayrollController.php
-
-    // app/Http/Controllers/PayrollController.php
 
     public function getDetails(Payroll $payroll, string $type)
     {

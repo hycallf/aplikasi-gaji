@@ -1,28 +1,17 @@
 @props([
-    'width' => '150',
+    'logoPath' => null,
+    'width' => '100',
 ])
 
-@php
-    // Tentukan path ke file logo Anda di dalam folder public
-    $path = public_path('images/Logo.png');
-
-    // Inisialisasi variabel untuk menghindari error
-    $logoSrc = '';
-
-    // Cek jika file benar-benar ada sebelum mencoba membacanya
-    if (file_exists($path)) {
-        // Baca file gambar
+@if ($logoPath && file_exists(public_path('storage/' . $logoPath)))
+    @php
+        $path = public_path('storage/' . $logoPath);
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        // Ubah gambar menjadi format Base64 dan buat Data URI
         $logoSrc = 'data:image/' . $type . ';base64,' . base64_encode($data);
-    }
-@endphp
-
-{{-- Tampilkan gambar hanya jika sumber Base64 berhasil dibuat --}}
-@if ($logoSrc)
+    @endphp
     <img src="{{ $logoSrc }}" alt="Logo" width="{{ $width }}">
 @else
-    {{-- Tampilkan teks ini jika logo tidak ditemukan di path --}}
-    <span>Logo Tidak Ditemukan</span>
+    {{-- Tampilkan teks jika tidak ada logo --}}
+    <span style="font-size: 18px; font-weight: bold;">NAMA PERUSAHAAN</span>
 @endif

@@ -103,6 +103,8 @@
                             <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b pb-1 mb-2">Informasi Personal
                             </h4>
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                <dt class="font-medium text-gray-500">Departemen</dt>
+                                <dd class="text-gray-900" x-text="employee.departemen || 'N/A'"></dd>
                                 <dt class="font-medium text-gray-500 dark:text-gray-400">Tanggal Masuk</dt>
                                 <dd class="text-gray-900 dark:text-gray-100"
                                     x-text="employee.detail?.tanggal_masuk || 'N/A'"></dd>

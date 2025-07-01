@@ -10,7 +10,7 @@
 
 
 .bg-login-custom {
-    background-image: url('/resources/images/gedung.webp'); /* <-- Ganti dengan nama file Anda */
+    background-image: url('/resources/images/bg.jpg'); /* <-- Ganti dengan nama file Anda */
     background-size: cover; /* Membuat gambar menutupi seluruh area */
     background-position: center; /* Posisi gambar di tengah */
     background-repeat: no-repeat; /* Agar gambar tidak berulang */

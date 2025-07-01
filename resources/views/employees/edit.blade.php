@@ -44,6 +44,14 @@
                                         :value="old('jabatan', $employee->jabatan)" required />
                                     <x-input-error :messages="$errors->get('jabatan')" class="mt-2" />
                                 </div>
+
+                                <div class="mt-4">
+                                    <x-input-label for="departemen" value="Departemen" />
+                                    <x-text-input id="departemen" class="block mt-1 w-full" type="text"
+                                        name="departemen" :value="old('departemen', $employee->departemen)" required />
+                                    <x-input-error :messages="$errors->get('departemen')" class="mt-2" />
+                                </div>
+
                                 <div class="mt-4">
                                     <x-input-label for="tipe_karyawan" value="Tipe Karyawan" />
                                     <select name="tipe_karyawan" id="tipe_karyawan"
@@ -69,6 +77,12 @@
                                         name="transport" :value="old('transport', $employee->transport)" required />
                                     <x-input-error :messages="$errors->get('transport')" class="mt-2" />
                                 </div>
+                                <div class="mt-4">
+                                    <x-input-label for="tunjangan" value="Tunjangan" />
+                                    <x-text-input id="tunjangan" class="block mt-1 w-full" type="number"
+                                        name="tunjangan" :value="old('tunjangan', $employee->tunjangan)" required />
+                                    <x-input-error :messages="$errors->get('tunjangan')" class="mt-2" />
+                                </div>
                             </div>
 
                             <div x-show="tab === 'detail'" style="display: none;">
@@ -76,7 +90,7 @@
                                 <div>
                                     <x-input-label for="tanggal_masuk" value="Tanggal Masuk Kerja" />
                                     <x-text-input id="tanggal_masuk" class="block mt-1 w-full" type="date"
-                                        name="tanggal_masuk" :value="old('tanggal_masuk', $employee->detail->tanggal_masuk ?? '')" required />
+                                        name="tanggal_masuk" :value="old('tanggal_masuk', $employee->detail->tanggal_masuk ?? '')" />
                                     <x-input-error :messages="$errors->get('tanggal_masuk')" class="mt-2" />
                                 </div>
 

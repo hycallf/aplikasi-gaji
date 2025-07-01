@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manajemen Event & Insentif') }}
+            Kelola Jenis Event & Insentif
         </h2>
     </x-slot>
 
@@ -12,41 +12,21 @@
                     <div class="mb-4">
                         <a href="{{ route('events.create') }}"
                             class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            + Buat Event Baru
+                            + Tambah Jenis Event Baru
                         </a>
-                    </div>
-
-                    {{-- Filter Tanggal --}}
-                    <div class="mb-4 flex items-end gap-4 border p-4 rounded-md">
-                        <div>
-                            <label for="start_date_filter" class="block text-sm font-medium text-gray-700">Filter dari
-                                Tanggal</label>
-                            <input type="date" id="start_date_filter" name="start_date_filter"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-                        <div>
-                            <label for="end_date_filter" class="block text-sm font-medium text-gray-700">Sampai
-                                Tanggal</label>
-                            <input type="date" id="end_date_filter" name="end_date_filter"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-                        <div>
-                            <button id="filter-btn"
-                                class="bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm">Filter</button>
-                            <button id="reset-btn"
-                                class="bg-gray-500 text-white px-4 py-2 rounded-md shadow-sm">Reset</button>
-                        </div>
+                        <a href="{{ route('incentives.index') }}"
+                            class="inline-block bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Kembali ke Riwayat Insentif
+                        </a>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto" id="events-table">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3">No</th>
-                                    <th class="px-6 py-3">Nama Event</th>
-                                    <th class="px-6 py-3">Periode</th>
-                                    <th class="px-6 py-3">Deskripsi</th>
-                                    <th class="px-6 py-3">Aksi</th>
+                                    <th class="px-6 py-3" style="width: 50px;">No</th>
+                                    <th class="px-6 py-3">Nama Jenis Event</th>
+                                    <th class="px-6 py-3" style="width: 150px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -60,18 +40,10 @@
     @push('scripts')
         <script>
             $(function() {
-                // Inisialisasi DataTables
-                var table = $('#events-table').DataTable({
+                $('#events-table').DataTable({
                     processing: true,
                     serverSide: true,
-                    ajax: {
-                        url: "{{ route('events.index') }}",
-                        data: function(d) {
-                            d.start_date_filter = $('#start_date_filter').val();
-                            d.end_date_filter = $('#end_date_filter').val();
-                        }
-                    },
-                    dom: '<"flex justify-between items-center mb-4"lf>t<"flex justify-between items-center mt-4"ip>',
+                    ajax: "{{ route('events.index') }}",
                     columns: [{
                             data: 'DT_RowIndex',
                             name: 'DT_RowIndex',
@@ -83,14 +55,6 @@
                             name: 'nama_event'
                         },
                         {
-                            data: 'periode',
-                            name: 'start_date'
-                        }, // Kita bisa urutkan berdasarkan start_date
-                        {
-                            data: 'deskripsi',
-                            name: 'deskripsi'
-                        },
-                        {
                             data: 'action',
                             name: 'action',
                             orderable: false,
@@ -99,22 +63,12 @@
                     ],
                     columnDefs: [{
                         className: "text-center",
-                        targets: [0, 2, 4]
+                        targets: [0, 2]
                     }]
                 });
-
-                // Event listener untuk tombol filter
-                $('#filter-btn').click(function() {
-                    table.draw();
+                $('#events-table').on('submit', 'form.delete-form', function(e) {
+                    confirmDelete(e);
                 });
-
-                // Event listener untuk tombol reset
-                $('#reset-btn').click(function() {
-                    $('#start_date_filter').val('');
-                    $('#end_date_filter').val('');
-                    table.draw();
-                });
-
             });
         </script>
     @endpush

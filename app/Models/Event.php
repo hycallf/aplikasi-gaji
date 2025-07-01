@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
-    protected $fillable = ['nama_event', 'deskripsi', 'start_date', 'end_date',];
+    protected $fillable = ['nama_event'];
 
     // Relasi: Satu event bisa punya banyak insentif
     public function incentives()

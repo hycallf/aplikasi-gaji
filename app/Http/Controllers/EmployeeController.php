@@ -88,6 +88,8 @@ class EmployeeController extends Controller
             'tipe_karyawan' => 'required|in:karyawan,dosen',
             'gaji_pokok' => 'required|numeric', // DIUBAH: menjadi 'gaji_pokok'
             'transport' => 'required|numeric',
+            'tunjangan' => 'required|numeric',
+            'departemen' => 'required|string|max:255',
             'tanggal_masuk' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'pendidikan_terakhir' => 'nullable|string',
@@ -106,6 +108,8 @@ class EmployeeController extends Controller
                 'tipe_karyawan' => $request->tipe_karyawan,
                 'gaji_pokok' => $request->gaji_pokok,
                 'transport' => $request->transport,
+                'tunjangan' => $request->tunjangan,
+                'departemen' => $request->departemen,
             ]);
 
             $pathFoto = null;
@@ -170,9 +174,11 @@ class EmployeeController extends Controller
             'nama' => ['required', 'string', 'max:255'],
             'jabatan' => ['required', 'string', 'max:255'],
             'tipe_karyawan' => ['required', 'in:karyawan,dosen'],
-            'tanggal_masuk' => ['required', 'date'],
+            'tanggal_masuk' => ['nullable', 'date'],
+            'departemen' => ['required','string','max:255'],
             'gaji_pokok' => ['required', 'numeric'],
             'transport' => ['required', 'numeric'],
+            'tunjangan' => ['required', 'numeric'],
             'alamat' => ['nullable', 'string'],
             'domisili' => ['nullable', 'string'],
             'no_hp' => ['nullable', 'string'],
@@ -185,7 +191,7 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
             
-            $employeeData = $request->only(['nama', 'jabatan', 'tipe_karyawan', 'gaji_pokok', 'transport', 'status']);
+            $employeeData = $request->only(['nama', 'jabatan','departemen', 'tipe_karyawan', 'gaji_pokok', 'transport','tunjangan', 'status']);
             $detailData = $request->only(['tanggal_masuk', 'alamat', 'domisili', 'no_hp', 'status_pernikahan', 'jumlah_anak', 'riwayat_pendidikan']);
 
             // 4. Proses upload foto baru jika ada

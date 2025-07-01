@@ -12,6 +12,8 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\Auth\PasswordSetupController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -33,6 +35,12 @@ Route::get('/', function () {
     // Jika tidak ada yang login, tampilkan halaman welcome
     return view('welcome');
 });
+
+
+Route::get('/setup-password/{user}', [PasswordSetupController::class, 'showSetupForm'])
+    ->middleware('signed') // <-- Middleware penting untuk keamanan link
+    ->name('password.setup');
+Route::post('/setup-password', [PasswordSetupController::class, 'submitSetupForm'])->name('password.submit');
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', [\App\Http\Controllers\Auth\EmailVerificationPromptController::class, '__invoke'])
@@ -74,9 +82,7 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::post('/events/{event}/incentives', [IncentiveController::class, 'store'])->name('events.incentives.store');
     
     // DITAMBAHKAN: Route untuk mengupdate insentif spesifik
-    Route::put('/incentives/{incentive}', [IncentiveController::class, 'update'])->name('incentives.update');
-    
-    Route::delete('/incentives/{incentive}', [IncentiveController::class, 'destroy'])->name('incentives.destroy');
+    Route::resource('incentives', IncentiveController::class);
 
     Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
     Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
@@ -94,7 +100,10 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
 
     Route::get('/dashboard/employee-calendar', [DashboardController::class, 'getEmployeeCalendarData'])->name('dashboard.employee_calendar');
 
+    Route::get('/company-profile', [CompanyProfileController::class, 'edit'])->name('company.profile.edit');
+    Route::put('/company-profile', [CompanyProfileController::class, 'update'])->name('company.profile.update');
 
+    Route::post('/users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])->name('users.resend_invitation');
     // Tambahkan route-route khusus operator lainnya di sini
 });
 

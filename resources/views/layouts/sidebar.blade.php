@@ -4,10 +4,10 @@
     class="w-64 bg-gray-800 text-gray-300 h-screen flex flex-col fixed top-0 left-0 z-20 transform transition-transform duration-300 ease-in-out"
     :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }">
     {{-- Logo Aplikasi --}}
-    <div class="h-16 flex items-center justify-center border-b border-gray-700">
-        <a href="{{ route('dashboard') }}">
-            {{-- 2. Ganti logo dengan versi yang lebih cocok untuk sidebar gelap --}}
-            <x-application-logo class="block h-9 w-auto fill-current text-white" />
+    <div class="h-16 flex items-center justify-center border-b border-gray-700 px-4">
+        <a href="..." class="flex items-center gap-2">
+            <x-application-logo :logoPath="$companyProfile?->logo" class="block h-9 w-auto" />
+            <span class="text-white font-bold">{{ $companyProfile->nama_perusahaan ?? config('app.name') }}</span>
         </a>
     </div>
 
@@ -77,6 +77,14 @@
                 <i class="fa-solid fa-calculator fa-fw w-5 h-5 mr-3 text-center"></i>
                 Proses Gaji
             </a>
+            <div class="border-t border-gray-700 mt-4 pt-4">
+                <a href="{{ route('company.profile.edit') }}"
+                    class="flex items-center px-4 py-2.5 rounded-md 
+            {{ request()->routeIs('company.profile.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                    <i class="fa-solid fa-building fa-fw w-5 h-5 mr-3 text-center"></i>
+                    Profil Perusahaan
+                </a>
+            </div>
         @else
             {{-- ///////////// MENU UNTUK KARYAWAN & DOSEN ///////////// --}}
 

@@ -22,12 +22,10 @@ return new class extends Migration
             $table->text('alamat')->nullable();
             $table->text('domisili')->nullable();
             $table->string('no_hp')->nullable();
-            $table->string('no_ktp')->nullable();
             $table->enum('status_pernikahan', ['Lajang', 'Menikah'])->nullable();
             $table->integer('jumlah_anak')->default(0);
-            $table->string('riwayat_pendidikan')->nullable();
-
-            // Data pekerjaan yang lebih detail (seperti yang Anda sebutkan)
+            $table->string('pendidikan_terakhir')->nullable();
+            $table->string('jurusan')->nullable();
             $table->date('tanggal_masuk')->nullable();
 
             $table->timestamps();

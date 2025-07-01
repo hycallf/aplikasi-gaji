@@ -39,15 +39,15 @@
 <body>
     <table style="width: 100%;">
         <tr>
-            <td style="width: 15%;">
-                <x-pdf-logo width="100" />
+            <td style="width: 10%;">
+                <x-pdf-logo :logoPath="$companyProfile?->logo" width="80" />
             </td>
-            <td style="text-align: center;">
+            <td style="text-align: center; vertical-align: middle;">
+                <div style="font-size: 18px; font-weight: bold;">
+                    {{ $companyProfile->nama_perusahaan ?? 'Nama Perusahaan' }}</div>
                 <h1>Laporan Gaji Periode {{ $period }}</h1>
             </td>
-            <td style="width: 15%;">
-                STIMIK MERCUSUAR
-            </td>
+
         </tr>
     </table>
     <br>

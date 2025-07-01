@@ -16,9 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nama');
             $table->string('jabatan');
-            $table->date('tanggal_masuk');
+            $table->string('departemen');
             $table->decimal('gaji_pokok', 15, 2); // Angka besar dengan 2 desimal
             $table->decimal('transport', 15, 2);
+            $table->decimal('tunjangan', 15, 2);
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });
