@@ -48,6 +48,7 @@ class ReportController extends Controller
         $year = $payroll->periode_tahun;
         $month = $payroll->periode_bulan;
         $employee_id = $payroll->employee_id;
+        $tunjangan = $payroll->employee->tunjangan;
 
         // --- Ambil Semua Data Detail ---
         // DITAMBAHKAN: Query untuk mengambil data absensi yang terlewat
@@ -88,7 +89,7 @@ class ReportController extends Controller
         ];
         // --- AKHIR LOGIKA BARU ---
 
-        $pdf = PDF::loadView('reports.payslip', compact('payroll', 'attendances', 'overtimes', 'incentives', 'deductionSummary','incentiveSummary'));
+        $pdf = PDF::loadView('reports.payslip', compact('payroll','tunjangan', 'attendances', 'overtimes', 'incentives', 'deductionSummary','incentiveSummary'));
 
         return $pdf->stream('slip-gaji-' . $payroll->employee->nama . '-' . $month . '-' . $year . '.pdf');
     }

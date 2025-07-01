@@ -116,6 +116,7 @@ public function index(Request $request)
             foreach ($employees as $employee) {
                 // 1. Gaji Pokok (dengan nilai default 0 jika null)
                 $gajiPokok = $employee->gaji_pokok ?? 0;
+                $tunjangan = $employee->tunjangan ?? 0;
 
                 // 2. Hitung Tunjangan Transport
                 $statusesDapatTransport = ['hadir', 'pulang_awal'];
@@ -142,7 +143,7 @@ public function index(Request $request)
                     ->sum('jumlah_potongan');
 
                 // 6. Hitung Gaji Kotor & Bersih
-                $gajiKotor = $gajiPokok + $totalTransport + $totalLembur + $totalInsentif;
+                $gajiKotor = $gajiPokok + $tunjangan + $totalTransport + $totalLembur + $totalInsentif;
                 $gajiBersih = $gajiKotor - $totalPotongan;
 
                 // 7. Simpan atau Update ke tabel payrolls

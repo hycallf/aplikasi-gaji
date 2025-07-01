@@ -163,6 +163,12 @@
                 <td>Gaji Pokok</td>
                 <td class="text-right">Rp {{ number_format($payroll->gaji_pokok, 0, ',', '.') }}</td>
             </tr>
+            @if ($payroll->employee->tunjangan > 0)
+                <tr class="item">
+                    <td>Tunjangan Tetap</td>
+                    <td class="text-right">Rp {{ number_format($payroll->employee->tunjangan, 0, ',', '.') }}</td>
+                </tr>
+            @endif
             @php
                 // Filter koleksi absensi untuk mendapatkan data hanya pada bulan dan tahun payroll
                 $daysInMonth = $attendances->filter(function ($att) use ($payroll) {
@@ -174,7 +180,8 @@
             <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
             @php
                 // Hitung sub-total gaji + tunjangan
-                $totalGajiTunjangan = $payroll->gaji_pokok + $payroll->total_tunjangan_transport;
+                $totalGajiTunjangan =
+                    $payroll->gaji_pokok + $payroll->total_tunjangan_transport + $payroll->employee->tunjangan;
             @endphp
             <tr class="item bold">
                 <td>Total Gaji</td>
