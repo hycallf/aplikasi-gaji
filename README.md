@@ -105,16 +105,16 @@ Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
         DB_PASSWORD=
         ```
 
-#### 5B. (PENTING) Aktifkan Ekstensi PHP GD
+6.  **(PENTING) Aktifkan Ekstensi PHP GD**
 
 Ekstensi ini wajib aktif agar fitur cetak PDF dengan logo bisa berjalan.
 
-1.  Di XAMPP Control Panel, pada baris **Apache**, klik tombol `Config`.
-2.  Pilih `PHP (php.ini)`. File akan terbuka di text editor.
-3.  Gunakan `Ctrl + F` dan cari teks: `;extension=gd`
-4.  **Hapus tanda titik koma (`;`)** di depannya sehingga baris tersebut menjadi: `extension=gd`
-5.  Simpan file `php.ini`.
-6.  **Restart Apache** dengan menekan tombol `Stop`, tunggu beberapa saat, lalu tekan `Start` lagi.
+    1.  Di XAMPP Control Panel, pada baris **Apache**, klik tombol `Config`.
+    2.  Pilih `PHP (php.ini)`. File akan terbuka di text editor.
+    3.  Gunakan `Ctrl + F` dan cari teks: `;extension=gd`
+    4.  **Hapus tanda titik koma (`;`)** di depannya sehingga baris tersebut menjadi: `extension=gd`
+    5.  Simpan file `php.ini`.
+    6.  **Restart Apache** dengan menekan tombol `Stop`, tunggu beberapa saat, lalu tekan `Start` lagi.
 
 7.  **Generate Kunci Aplikasi**
 
