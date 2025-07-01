@@ -176,8 +176,10 @@
                     return $attDate->month == $payroll->periode_bulan && $attDate->year == $payroll->periode_tahun;
                 });
             @endphp
-            <td>Tunjangan Transport ({{ $daysInMonth->count() }} hari)</td>
-            <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
+            <tr class="item">
+                <td>Tunjangan Transport ({{ $daysInMonth->count() }} hari)</td>
+                <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
+            </tr>
             @php
                 // Hitung sub-total gaji + tunjangan
                 $totalGajiTunjangan =
