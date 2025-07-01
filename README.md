@@ -107,7 +107,7 @@ Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
 
 6.  **(PENTING) Aktifkan Ekstensi PHP GD**
 
-Ekstensi ini wajib aktif agar fitur cetak PDF dengan logo bisa berjalan.
+    Ekstensi ini wajib aktif agar fitur cetak PDF dengan logo bisa berjalan.
 
     1.  Di XAMPP Control Panel, pada baris **Apache**, klik tombol `Config`.
     2.  Pilih `PHP (php.ini)`. File akan terbuka di text editor.
