@@ -41,11 +41,42 @@
             </a>
             <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Kelola Gaji</p>
 
-            <a href="{{ route('recap.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md {{ request()->routeIs('recap.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                <i class="fa-solid fa-file-pen fa-fw w-5 h-5 mr-3 text-center"></i>
-                Rekap Bulanan
-            </a>
+            <div x-data="{ open: {{ request()->routeIs('recap.*') || request()->routeIs('attendances.*') || request()->routeIs('overtimes.*') ? 'true' : 'false' }} }">
+                {{-- Tombol Utama Dropdown --}}
+                <button @click="open = !open"
+                    class="w-full flex items-center justify-between px-4 py-2.5 rounded-md transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <span class="flex items-center">
+                        <i class="fa-solid fa-file-pen fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Rekapitulasi
+                    </span>
+                    <svg class="w-4 h-4 transform transition-transform" :class="{ 'rotate-180': open }"
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                {{-- DIUBAH: Konten Sub-menu dengan ikon dan inden --}}
+                <div x-show="open" x-transition class="mt-1 pl-8 space-y-1">
+
+                    <a href="{{ route('recap.index') }}"
+                        class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('recap.index') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-list-check fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Rekap Bulanan
+                    </a>
+                    <a href="{{ route('attendances.index') }}"
+                        class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-calendar-day fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Input Absensi
+                    </a>
+                    <a href="{{ route('overtimes.index') }}"
+                        class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('overtimes.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-stopwatch fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Input Lembur
+                    </a>
+                </div>
+            </div>
 
             <a href="{{ route('events.index') }}"
                 class="flex items-center px-4 py-2.5 rounded-md
