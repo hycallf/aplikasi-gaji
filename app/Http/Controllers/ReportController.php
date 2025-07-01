@@ -25,12 +25,12 @@ class ReportController extends Controller
             ->where('periode_bulan', $month)
             ->where('periode_tahun', '>=', $year) // Perbaikan kecil di sini
             ->get();
-        
+
         $period = Carbon::create($year, $month)->isoFormat('MMMM YYYY');
 
         // Load view, kirim data, dan buat PDF
         $pdf = PDF::loadView('reports.payroll_report', compact('payrolls', 'period'));
-        
+
         // Download PDF dengan nama file dinamis
         return $pdf->download('laporan-gaji-' . $month . '-' . $year . '.pdf');
     }
@@ -44,7 +44,7 @@ class ReportController extends Controller
     {
         // Load relasi utama
         $payroll->load(['employee.detail', 'employee.user']);
-        
+
         $year = $payroll->periode_tahun;
         $month = $payroll->periode_bulan;
         $employee_id = $payroll->employee_id;
@@ -60,10 +60,18 @@ class ReportController extends Controller
             ->whereYear('tanggal_lembur', $year)->whereMonth('tanggal_lembur', $month)->get();
 
         $incentives = Incentive::with('event')->where('employee_id', $employee_id)
-            ->whereHas('event', function ($q) use ($year, $month) {
-                $q->whereYear('start_date', $year)->whereMonth('start_date', $month);
-            })->get();
-        
+            ->whereYear('tanggal_insentif', $year)
+            ->whereMonth('tanggal_insentif', $month)
+            ->get();
+
+        $incentiveSummary = $incentives->groupBy('event.nama_event')
+        ->map(function ($items, $eventName) {
+            return [
+                'event_name' => $eventName,
+                'count' => $items->count(), // Hitung berapa kali terjadi
+                'total_amount' => $items->sum('jumlah_insentif'), // Hitung total nominalnya
+            ];
+        });
         // --- LOGIKA BARU UNTUK MEMPROSES POTONGAN ---
         $allDeductions = Deduction::where('employee_id', $employee_id)
             ->whereYear('tanggal_potongan', $year)->whereMonth('tanggal_potongan', $month)->get();
@@ -71,7 +79,7 @@ class ReportController extends Controller
         // Pisahkan potongan 'pulang_awal' dari yang lain
         $pulangAwalDeductions = $allDeductions->where('jenis_potongan', 'Transport')->where('sumber', 'absensi');
         $manualDeductions = $allDeductions->where('sumber', 'manual');
-        
+
         // Siapkan data ringkasan untuk dikirim ke view
         $deductionSummary = [
             'pulang_awal_count' => $pulangAwalDeductions->count(),
@@ -80,8 +88,8 @@ class ReportController extends Controller
         ];
         // --- AKHIR LOGIKA BARU ---
 
-        $pdf = PDF::loadView('reports.payslip', compact('payroll', 'attendances', 'overtimes', 'incentives', 'deductionSummary'));
-        
+        $pdf = PDF::loadView('reports.payslip', compact('payroll', 'attendances', 'overtimes', 'incentives', 'deductionSummary','incentiveSummary'));
+
         return $pdf->stream('slip-gaji-' . $payroll->employee->nama . '-' . $month . '-' . $year . '.pdf');
     }
 }

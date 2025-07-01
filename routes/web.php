@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\Auth\PasswordSetupController;
+use App\Http\Controllers\MonthlyRecapController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -66,7 +67,7 @@ Route::middleware(['auth', 'verified', 'is_not_operator'])->group(function () {
     Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
 
      Route::get('/my-history/payroll', [UserDashboardController::class, 'payrollHistory'])->name('user.payroll.history');
-     
+
     // Jika ada halaman lain khusus karyawan/dosen, letakkan di sini juga.
 });
 
@@ -78,9 +79,9 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::resource('events', EventController::class);
     Route::resource('deductions', DeductionController::class);
-    
+
     Route::post('/events/{event}/incentives', [IncentiveController::class, 'store'])->name('events.incentives.store');
-    
+
     // DITAMBAHKAN: Route untuk mengupdate insentif spesifik
     Route::resource('incentives', IncentiveController::class);
 
@@ -105,6 +106,9 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
 
     Route::post('/users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])->name('users.resend_invitation');
     // Tambahkan route-route khusus operator lainnya di sini
+
+    Route::get('/monthly-recap', [MonthlyRecapController::class, 'index'])->name('recap.index');
+    Route::post('/monthly-recap', [MonthlyRecapController::class, 'store'])->name('recap.store');
 });
 
 require __DIR__.'/auth.php';

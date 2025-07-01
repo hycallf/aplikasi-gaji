@@ -28,12 +28,12 @@ public function index(Request $request)
             ->where('periode_bulan', $month)
             ->where('periode_tahun', $year)
             ->get();
-        
+
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('nama_karyawan', fn($row) => $row->employee->nama)
             ->editColumn('gaji_pokok', fn($row) => 'Rp ' . number_format($row->gaji_pokok, 0, ',', '.'))
-            
+
             // Kolom Transport dengan Tombol Detail
             ->addColumn('transport', function($row) {
                 $total = 'Rp ' . number_format($row->total_tunjangan_transport, 0, ',', '.');
@@ -58,9 +58,9 @@ public function index(Request $request)
                 $button = '<button @click.prevent="showDetails('.$row->id.', \'potongan\')" class="ml-2 text-blue-500 hover:underline"><i class="fa-solid fa-eye fa-xs"></i></button>';
                 return '<div class="flex items-center justify-end text-red-600">'.$total.$button.'</div>';
             })
-            
+
             ->editColumn('gaji_bersih', fn($row) => '<span class="font-bold">Rp ' . number_format($row->gaji_bersih, 0, ',', '.') . '</span>')
-            
+
             // Kolom Aksi untuk Slip Gaji
             ->addColumn('action', function($row){
                  // Nanti link ini akan kita buat
@@ -69,7 +69,7 @@ public function index(Request $request)
             ->rawColumns(['transport', 'lembur', 'insentif', 'potongan', 'gaji_bersih', 'action'])
             ->make(true);
         }
-    
+
 
         // --- LOGIKA PROSES OTOMATIS SAAT MEMBUKA HALAMAN ---
         $currentMonth = Carbon::now()->month;
@@ -88,11 +88,11 @@ public function index(Request $request)
         // Untuk tampilan awal halaman
         $selectedMonth = $request->input('month', date('m'));
         $selectedYear = $request->input('year', date('Y'));
-        
+
         return view('payroll.index', compact('selectedMonth', 'selectedYear'));
     }
 
-    
+
     public function process(Request $request)
     {
         $request->validate([
@@ -129,13 +129,13 @@ public function index(Request $request)
                 $totalLembur = Overtime::where('employee_id', $employee->id)
                     ->whereYear('tanggal_lembur', $year)->whereMonth('tanggal_lembur', $month)
                     ->sum('upah_lembur');
-                
+
                 // 4. Hitung Total Insentif
                 $totalInsentif = Incentive::where('employee_id', $employee->id)
-                    ->whereHas('event', function ($query) use ($year, $month) {
-                        $query->whereYear('start_date', $year)->whereMonth('start_date', $month);
-                    })->sum('jumlah_insentif');
-                
+                    ->whereYear('tanggal_insentif', $year)
+                    ->whereMonth('tanggal_insentif', $month)
+                    ->sum('jumlah_insentif');
+
                 // 5. Hitung Total Potongan
                 $totalPotongan = Deduction::where('employee_id', $employee->id)
                     ->whereYear('tanggal_potongan', $year)->whereMonth('tanggal_potongan', $month)
@@ -218,7 +218,7 @@ public function index(Request $request)
                 $total = $data->sum('jumlah_potongan');
                 break;
         }
-        
+
         // Kirim juga data payroll agar bisa akses tarif transport di view
         return view('payroll._detail_modal', compact('data', 'type', 'total', 'payroll'));
     }

@@ -163,10 +163,15 @@
                 <td>Gaji Pokok</td>
                 <td class="text-right">Rp {{ number_format($payroll->gaji_pokok, 0, ',', '.') }}</td>
             </tr>
-            <tr class="item">
-                <td>Tunjangan Transport ({{ $attendances->count() }} hari)</td>
-                <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
-            </tr>
+            @php
+                // Filter koleksi absensi untuk mendapatkan data hanya pada bulan dan tahun payroll
+                $daysInMonth = $attendances->filter(function ($att) use ($payroll) {
+                    $attDate = \Carbon\Carbon::parse($att->date);
+                    return $attDate->month == $payroll->periode_bulan && $attDate->year == $payroll->periode_tahun;
+                });
+            @endphp
+            <td>Tunjangan Transport ({{ $daysInMonth->count() }} hari)</td>
+            <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
             @php
                 // Hitung sub-total gaji + tunjangan
                 $totalGajiTunjangan = $payroll->gaji_pokok + $payroll->total_tunjangan_transport;
@@ -196,15 +201,21 @@
                     @endforeach --}}
                 @endif
 
-                @if ($payroll->total_insentif > 0)
+                @if ($incentiveSummary->count() > 0)
                     {{-- <tr class="item">
                         <td>Insentif</td>
                         <td class="text-right">Rp {{ number_format($payroll->total_insentif, 0, ',', '.') }}</td>
                     </tr> --}}
-                    @foreach ($incentives as $incentive)
+                    {{-- Loop untuk menampilkan setiap jenis event yang diringkas --}}
+                    @foreach ($incentiveSummary as $summary)
                         <tr class="item">
-                            <td colspan="2">{{ $incentive->event->nama_event }} <span style="float: right;">Rp
-                                    {{ number_format($incentive->jumlah_insentif, 0, ',', '.') }}</span></td>
+                            {{-- Tampilkan nama event dan jumlah kejadiannya --}}
+                            <td colspan="2">
+                                {{ $summary['event_name'] }} ({{ $summary['count'] }}x)
+                                <span style="float: right;">
+                                    Rp {{ number_format($summary['total_amount'], 0, ',', '.') }}
+                                </span>
+                            </td>
                         </tr>
                     @endforeach
                 @endif

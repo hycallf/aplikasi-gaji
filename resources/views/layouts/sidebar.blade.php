@@ -34,36 +34,28 @@
                 Users
             </a>
             <a href="{{ route('employees.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
+                class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('employees.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                 <i class="fa-solid fa-address-book w-5 h-5 mr-3 text-center"></i>
                 Karyawan
             </a>
             <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Kelola Gaji</p>
 
-            <a href="{{ route('attendances.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
-            {{ request()->routeIs('attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                <i class="fa-solid fa-calendar-check fa-fw w-5 h-5 mr-3 text-center"></i>
-                Absensi
-            </a>
-
-            <a href="{{ route('overtimes.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
-            {{ request()->routeIs('overtimes.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                <i class="fa-solid fa-clock fa-fw w-5 h-5 mr-3 text-center"></i>
-                Lembur
+            <a href="{{ route('recap.index') }}"
+                class="flex items-center px-4 py-2.5 rounded-md {{ request()->routeIs('recap.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                <i class="fa-solid fa-file-pen fa-fw w-5 h-5 mr-3 text-center"></i>
+                Rekap Bulanan
             </a>
 
             <a href="{{ route('events.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
+                class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('events.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                 <i class="fa-solid fa-gift fa-fw w-5 h-5 mr-3 text-center"></i>
                 Event & Insentif
             </a>
 
             <a href="{{ route('deductions.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
+                class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('deductions.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                 <i class="fa-solid fa-file-invoice-dollar fa-fw w-5 h-5 mr-3 text-center"></i>
                 Potongan
@@ -72,14 +64,14 @@
             <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Slip gaji & laporan</p>
 
             <a href="{{ route('payroll.index') }}"
-                class="flex items-center px-4 py-2.5 rounded-md 
+                class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('payroll.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                 <i class="fa-solid fa-calculator fa-fw w-5 h-5 mr-3 text-center"></i>
                 Proses Gaji
             </a>
             <div class="border-t border-gray-700 mt-4 pt-4">
                 <a href="{{ route('company.profile.edit') }}"
-                    class="flex items-center px-4 py-2.5 rounded-md 
+                    class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('company.profile.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                     <i class="fa-solid fa-building fa-fw w-5 h-5 mr-3 text-center"></i>
                     Profil Perusahaan
