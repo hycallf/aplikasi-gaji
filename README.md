@@ -105,13 +105,24 @@ Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
         DB_PASSWORD=
         ```
 
-6.  **Generate Kunci Aplikasi**
+#### 5B. (PENTING) Aktifkan Ekstensi PHP GD
+
+Ekstensi ini wajib aktif agar fitur cetak PDF dengan logo bisa berjalan.
+
+1.  Di XAMPP Control Panel, pada baris **Apache**, klik tombol `Config`.
+2.  Pilih `PHP (php.ini)`. File akan terbuka di text editor.
+3.  Gunakan `Ctrl + F` dan cari teks: `;extension=gd`
+4.  **Hapus tanda titik koma (`;`)** di depannya sehingga baris tersebut menjadi: `extension=gd`
+5.  Simpan file `php.ini`.
+6.  **Restart Apache** dengan menekan tombol `Stop`, tunggu beberapa saat, lalu tekan `Start` lagi.
+
+7.  **Generate Kunci Aplikasi**
 
     ```bash
     php artisan key:generate
     ```
 
-7.  **Buat Struktur Database & Isi Data Awal**
+8.  **Buat Struktur Database & Isi Data Awal**
     Perintah ini akan membuat semua tabel dan mengisinya dengan data awal (seperti role).
 
     ```bash
@@ -120,20 +131,20 @@ Pastikan perangkat Anda sudah terinstall perangkat lunak berikut:
 
     _Jika Anda menghadapi error, coba jalankan `php artisan migrate:fresh --seed` untuk menghapus semua tabel lama terlebih dahulu._
 
-8.  **Buat Symbolic Link untuk Storage**
+9.  **Buat Symbolic Link untuk Storage**
     Penting agar file yang diupload (seperti foto karyawan) bisa diakses.
 
     ```bash
     php artisan storage:link
     ```
 
-9.  **Install Dependensi Frontend**
+10. **Install Dependensi Frontend**
 
     ```bash
     npm install
     ```
 
-10. **Compile Aset Frontend (untuk Production)**
+11. **Compile Aset Frontend (untuk Production)**
     Jika Anda ingin langsung menjalankan versi production, jalankan perintah ini sekali.
     ```bash
     npm run build
