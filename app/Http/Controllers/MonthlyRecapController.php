@@ -17,7 +17,9 @@ class MonthlyRecapController extends Controller
      */
     public function index(Request $request)
     {
-        $employees = Employee::where('status', 'aktif')->orderBy('nama')->get();
+        $employees = Employee::where('tipe_karyawan', 'karyawan')
+                         ->where('status', 'aktif')
+                         ->orderBy('nama')->get();
         return view('recap.index', compact('employees'));
     }
 

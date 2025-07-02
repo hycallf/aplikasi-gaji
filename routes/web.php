@@ -15,6 +15,8 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\Auth\PasswordSetupController;
 use App\Http\Controllers\MonthlyRecapController;
+use App\Http\Controllers\MatkulController;
+use App\Http\Controllers\DosenAttendanceController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -79,6 +81,7 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::resource('events', EventController::class);
     Route::resource('deductions', DeductionController::class);
+    Route::resource('matkuls', MatkulController::class);
 
     Route::post('/events/{event}/incentives', [IncentiveController::class, 'store'])->name('events.incentives.store');
 
@@ -109,6 +112,9 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
 
     Route::get('/monthly-recap', [MonthlyRecapController::class, 'index'])->name('recap.index');
     Route::post('/monthly-recap', [MonthlyRecapController::class, 'store'])->name('recap.store');
+
+    Route::get('/dosen-attendances', [DosenAttendanceController::class, 'index'])->name('dosen.attendances.index');
+    Route::post('/dosen-attendances', [DosenAttendanceController::class, 'store'])->name('dosen.attendances.store');
 });
 
 require __DIR__.'/auth.php';

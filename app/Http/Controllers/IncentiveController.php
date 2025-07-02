@@ -81,17 +81,13 @@ class IncentiveController extends Controller
             DB::transaction(function () use ($validatedData) {
                 foreach ($validatedData['employee_ids'] as $employeeId) {
                     foreach ($validatedData['tanggal_insentif'] as $dateString) {
-                        Incentive::updateOrCreate(
-                            [
-                                'event_id' => $validatedData['event_id'],
-                                'employee_id' => $employeeId,
-                                'tanggal_insentif' => $dateString,
-                            ],
-                            [
-                                'jumlah_insentif' => $validatedData['jumlah_insentif'],
-                                'deskripsi' => $validatedData['deskripsi'],
-                            ]
-                        );
+                        Incentive::create([
+                            'event_id' => $request->event_id,
+                            'employee_id' => $employeeId,
+                            'tanggal_insentif' => $validDate,
+                            'jumlah_insentif' => $request->jumlah_insentif,
+                            'deskripsi' => $request->deskripsi,
+                        ]);
                     }
                 }
             });

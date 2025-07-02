@@ -169,36 +169,61 @@
                     <td class="text-right">Rp {{ number_format($payroll->employee->tunjangan, 0, ',', '.') }}</td>
                 </tr>
             @endif
-            @php
-                // Filter koleksi absensi untuk mendapatkan data hanya pada bulan dan tahun payroll
-                $daysInMonth = $attendances->filter(function ($att) use ($payroll) {
-                    $attDate = \Carbon\Carbon::parse($att->date);
-                    return $attDate->month == $payroll->periode_bulan && $attDate->year == $payroll->periode_tahun;
-                });
-            @endphp
-            <tr class="item">
-                <td>Tunjangan Transport ({{ $daysInMonth->count() }} hari)</td>
-                <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
-            </tr>
+            @if ($payroll->employee->tipe_karyawan === 'dosen')
+                @php $totalPertemuan = $dosenAttendances->sum('jumlah_pertemuan'); @endphp
+                <tr class="item">
+                    <td>Transport Utama ({{ $totalPertemuan }} Pertemuan x Rp
+                        {{ number_format($payroll->employee->transport, 0, ',', '.') }})</td>
+
+                    <td class="text-right">
+                        Rp {{ number_format($payroll->employee->transport * $totalPertemuan, 0, ',', '.') }}
+                    </td>
+                </tr>
+                @foreach ($dosenAttendances as $att)
+                    <tr class="item">
+                        <td>
+                            {{ $att->matkul->nama_matkul }} ({{ $att->jumlah_pertemuan }} Pertemuan x
+                            {{ $att->matkul->sks }} SKS x Rp 7.500)
+                        </td>
+                        <td class="text-right">
+                            Rp {{ number_format(7500 * $att->matkul->sks * $att->jumlah_pertemuan, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endforeach
+            @else
+                @php
+                    // Filter koleksi absensi untuk mendapatkan data hanya pada bulan dan tahun payroll
+                    $daysInMonth = $attendances->filter(function ($att) use ($payroll) {
+                        $attDate = \Carbon\Carbon::parse($att->date);
+                        return $attDate->month == $payroll->periode_bulan && $attDate->year == $payroll->periode_tahun;
+                    });
+                @endphp
+                <tr class="item">
+                    <td>Tunjangan Transport ({{ $daysInMonth->count() }} hari)</td>
+                    <td class="text-right">Rp {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endif
             @php
                 // Hitung sub-total gaji + tunjangan
                 $totalGajiTunjangan =
                     $payroll->gaji_pokok + $payroll->total_tunjangan_transport + $payroll->employee->tunjangan;
+
             @endphp
             <tr class="item bold">
                 <td>Total Gaji</td>
                 <td class="text-right">Rp {{ number_format($totalGajiTunjangan, 0, ',', '.') }}</td>
             </tr>
-
+            <tr class="heading">
+                <td>Bonus</td>
+                <td class="text-right">Jumlah</td>
+            </tr>
             @if ($payroll->total_upah_lembur > 0 || $payroll->total_insentif > 0)
                 @if ($payroll->total_upah_lembur > 0)
-                    <tr class="heading">
-                        <td>Bonus</td>
-                        <td class="text-right">Jumlah</td>
-                    </tr>
                     <tr class="item">
                         <td>Upah Lembur</td>
-                        <td class="text-right">Rp {{ number_format($payroll->total_upah_lembur, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($payroll->total_upah_lembur, 0, ',', '.') }}
+                        </td>
                     </tr>
                     {{-- @foreach ($overtimes as $overtime)
                         <tr class="sub-item">
@@ -220,7 +245,16 @@
                         <tr class="item">
                             {{-- Tampilkan nama event dan jumlah kejadiannya --}}
                             <td colspan="2">
-                                {{ $summary['event_name'] }} ({{ $summary['count'] }}x)
+                                {{-- Tampilkan nama event --}}
+                                {{ $summary['event_name'] }}
+
+                                {{-- Tampilkan detail perhitungan di sebelahnya --}}
+                                <span style="color: #888;">
+                                    (Rp {{ number_format($summary['individual_amount'], 0, ',', '.') }} x
+                                    {{ $summary['count'] }} kali)
+                                </span>
+
+                                {{-- Tampilkan sub-total di kanan --}}
                                 <span style="float: right;">
                                     Rp {{ number_format($summary['total_amount'], 0, ',', '.') }}
                                 </span>

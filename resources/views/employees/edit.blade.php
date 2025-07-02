@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-6 text-gray-900 dark:text-gray-100" x-data="{ tipeKaryawan: '{{ old('tipe_karyawan', $employee->tipe_karyawan) }}' }">
                     <form method="POST" action="{{ route('employees.update', $employee->id) }}"
                         enctype="multipart/form-data">
                         @csrf
@@ -55,7 +55,8 @@
                                 <div class="mt-4">
                                     <x-input-label for="tipe_karyawan" value="Tipe Karyawan" />
                                     <select name="tipe_karyawan" id="tipe_karyawan"
-                                        class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        @change="tipeKaryawan = $event.target.value"
+                                        class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
                                         <option value="karyawan"
                                             {{ old('tipe_karyawan', $employee->tipe_karyawan) == 'karyawan' ? 'selected' : '' }}>
                                             Karyawan</option>
@@ -64,6 +65,19 @@
                                             Dosen</option>
                                     </select>
                                     <x-input-error :messages="$errors->get('tipe_karyawan')" class="mt-2" />
+                                </div>
+                                <div x-show="tipeKaryawan === 'dosen'" style="display: none;" class="mt-4">
+                                    <x-input-label for="matkuls" value="Mata Kuliah yang Diajar" />
+                                    <select name="matkuls[]" id="select-matkul" class="block w-full mt-1"
+                                        multiple="multiple">
+                                        @foreach ($matkuls as $matkul)
+                                            {{-- Cek apakah dosen ini sudah mengajar matkul ini --}}
+                                            <option value="{{ $matkul->id }}"
+                                                {{ in_array($matkul->id, $employee->matkuls->pluck('id')->toArray()) ? 'selected' : '' }}>
+                                                {{ $matkul->nama_matkul }} ({{ $matkul->sks }} SKS)
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="mt-4">
                                     <x-input-label for="gaji_pokok" value="Gaji Pokok" />
@@ -96,8 +110,8 @@
 
                                 <div class="mt-4">
                                     <x-input-label for="no_hp" value="Nomor HP" />
-                                    <x-text-input id="no_hp" class="block mt-1 w-full" type="text" name="no_hp"
-                                        :value="old('no_hp', $employee->detail->no_hp ?? '')" />
+                                    <x-text-input id="no_hp" class="block mt-1 w-full" type="text"
+                                        name="no_hp" :value="old('no_hp', $employee->detail->no_hp ?? '')" />
                                     <x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
                                 </div>
                                 <div class="mt-4">
@@ -186,4 +200,16 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        {{-- Inisialisasi Select2 untuk dropdown matkul --}}
+        <script>
+            $(document).ready(function() {
+                $('#select-matkul').select2({
+                    placeholder: 'Pilih satu atau lebih mata kuliah',
+                    width: '100%'
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

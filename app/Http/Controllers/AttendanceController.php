@@ -24,7 +24,7 @@ class AttendanceController extends Controller
         $attendanceSummary = Attendance::whereYear('date', $selectedDate->year)->whereMonth('date', $selectedDate->month)
             ->select('date', DB::raw('count(*) as total_submitted'))->groupBy('date')
             ->get()->keyBy(fn($item) => Carbon::parse($item->date)->day);
-        
+
         $completedDates = [];
         foreach($attendanceSummary as $day => $summary) {
             if ($summary->total_submitted >= $totalActiveEmployees) {
@@ -47,15 +47,18 @@ class AttendanceController extends Controller
         $employees = $this->getFilteredEmployees($request);
         $attendances = Attendance::whereDate('date', $selectedDate->toDateString())->pluck('status', 'employee_id')->all();
         $descriptions = Attendance::whereDate('date', $selectedDate->toDateString())->pluck('description', 'employee_id')->all();
-        
+
         // Kembalikan HANYA view partial baris tabelnya
         return view('attendances._employee_rows', compact('employees', 'attendances', 'descriptions'));
     }
-    
+
     // Method private untuk mengambil data karyawan yang difilter
     private function getFilteredEmployees(Request $request)
     {
-        $query = Employee::where('status', 'aktif')->orderBy('nama');
+        $query = Employee::where('status', 'aktif')
+                         ->where('tipe_karyawan', 'karyawan') // <-- Filter diterapkan di sini
+                         ->orderBy('nama');
+
         if ($request->filled('search_name')) {
             $query->where('nama', 'like', '%' . $request->search_name . '%');
         }

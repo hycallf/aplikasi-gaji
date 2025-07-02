@@ -44,6 +44,11 @@
                         <i class="fa-solid fa-address-book w-5 h-5 mr-3 text-center"></i>
                         Karyawan
                     </a>
+                    <a href="{{ route('matkuls.index') }}"
+                        class="flex items-center px-4 py-2.5 rounded-md transition duration-200 {{ request()->routeIs('matkuls.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-book fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Manajemen Matkul
+                    </a>
                     <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Kelola Gaji</p>
 
                     <div x-data="{ open: {{ request()->routeIs('recap.*') || request()->routeIs('attendances.*') || request()->routeIs('overtimes.*') ? 'true' : 'false' }} }">
@@ -74,6 +79,11 @@
                                 class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                                 <i class="fa-solid fa-calendar-day fa-fw w-5 h-5 mr-3 text-center"></i>
                                 Input Absensi
+                            </a>
+                            <a href="{{ route('dosen.attendances.index') }}"
+                                class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('dosen.attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                                <i class="fa-solid fa-chalkboard-user fa-fw w-5 h-5 mr-3 text-center"></i>
+                                Absensi Dosen
                             </a>
                             <a href="{{ route('overtimes.index') }}"
                                 class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('overtimes.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">

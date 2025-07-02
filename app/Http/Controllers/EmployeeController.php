@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Models\Matkul;
 use DataTables;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -41,8 +42,8 @@ class EmployeeController extends Controller
                 ->addColumn('action', function($row){
                     // Menggunakan helper view() untuk me-render komponen Blade
                     $showUrl = route('employees.show', $row->id);
-                    $showButton = '<button 
-                        type="button" 
+                    $showButton = '<button
+                        type="button"
                         @click.prevent="$dispatch(\'open-employee-detail\', { employeeData: await (await fetch(\''.$showUrl.'\')).json() })"
                         class="inline-flex items-center gap-x-1.5 rounded-md bg-green-100 dark:bg-green-900/50 px-2.5 py-1.5 text-sm font-semibold text-green-700 dark:text-green-300 shadow-sm hover:bg-green-200 dark:hover:bg-green-800 transition-colors">
                             <i class="fa-solid fa-eye fa-fw"></i>
@@ -58,7 +59,7 @@ class EmployeeController extends Controller
                         'type' => 'delete',
                         'route' => route('employees.destroy', $row->id)
                     ])->render();
-                    
+
                     // Gabungkan kedua tombol dalam satu div untuk penataan
                     return '<div class="flex items-center justify-center space-x-2">' . $showButton . $editButton . $deleteButton . '</div>';
                 })
@@ -162,7 +163,9 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $employee->load('detail');
-        return view('employees.edit', compact('employee'));
+        $matkuls = Matkul::orderBy('nama_matkul')->get();
+        return view('employees.edit', compact('employee','matkuls'));
+
     }
 
     /**
@@ -190,7 +193,7 @@ class EmployeeController extends Controller
         // Dengan Route Model Binding, $employee sudah berisi data yang benar
         try {
             DB::beginTransaction();
-            
+
             $employeeData = $request->only(['nama', 'jabatan','departemen', 'tipe_karyawan', 'gaji_pokok', 'transport','tunjangan', 'status']);
             $detailData = $request->only(['tanggal_masuk', 'alamat', 'domisili', 'no_hp', 'status_pernikahan', 'jumlah_anak', 'riwayat_pendidikan']);
 
@@ -219,6 +222,14 @@ class EmployeeController extends Controller
                 $detailData  // Dan update/buat dengan data ini
             );
 
+            if ($request->tipe_karyawan === 'dosen' && $request->has('matkuls')) {
+                // sync() akan otomatis mengatur relasi di tabel employee_matkul
+                $employee->matkuls()->sync($request->input('matkuls', []));
+            } else {
+                // Jika bukan dosen, hapus semua relasi matkulnya
+                $employee->matkuls()->sync([]);
+            }
+
             // 7. Update data user yang terhubung (jika ada) agar tetap sinkron
             if ($employee->user) {
                 $employee->user->update([
@@ -243,7 +254,7 @@ class EmployeeController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             // Hapus user yang terhubung terlebih dahulu
             // Ini akan gagal jika ada relasi lain yang melindungi user,
             // tapi untuk kasus ini seharusnya aman.
@@ -253,7 +264,7 @@ class EmployeeController extends Controller
 
             // Hapus data employee
             $employee->delete();
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

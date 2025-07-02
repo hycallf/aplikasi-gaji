@@ -7,6 +7,7 @@ use App\Models\Deduction;
 use App\Models\Incentive;
 use App\Models\Overtime;
 use App\Models\Payroll;
+use App\Models\DosenAttendance;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf; // <-- Import DOMPDF
 use Carbon\Carbon;
@@ -50,13 +51,26 @@ class ReportController extends Controller
         $employee_id = $payroll->employee_id;
         $tunjangan = $payroll->employee->tunjangan;
 
+        $attendances = collect();
+        $dosenAttendances = collect();
+        $overtimes = collect();
+        $incentives = collect();
+        $deductionSummary = [];
+
         // --- Ambil Semua Data Detail ---
         // DITAMBAHKAN: Query untuk mengambil data absensi yang terlewat
-        $statusesDapatTransport = ['hadir', 'pulang_awal'];
-        $attendances = Attendance::where('employee_id', $employee_id)
-            ->whereYear('date', $year)->whereMonth('date', '>=', $month) // Perbaikan kecil di sini
-            ->whereIn('status', $statusesDapatTransport)
+        if ($payroll->employee->tipe_karyawan === 'dosen') {
+        $dosenAttendances = DosenAttendance::with('matkul')
+            ->where('employee_id', $employee_id)
+            ->where('periode_bulan', $month)->where('periode_tahun', $year)
             ->get();
+        } else {
+            $statusesDapatTransport = ['hadir', 'pulang_awal'];
+            $attendances = Attendance::where('employee_id', $employee_id)
+                ->whereYear('date', $year)->whereMonth('date', $month)
+                ->whereIn('status', $statusesDapatTransport)->get();
+        }
+
         $overtimes = Overtime::where('employee_id', $employee_id)
             ->whereYear('tanggal_lembur', $year)->whereMonth('tanggal_lembur', $month)->get();
 
@@ -67,10 +81,15 @@ class ReportController extends Controller
 
         $incentiveSummary = $incentives->groupBy('event.nama_event')
         ->map(function ($items, $eventName) {
+
+            $firstItem = $items->first();
+            $eventName = $firstItem->event->nama_event ?? 'Insentif Lainnya';
+            $individualAmount = $firstItem->jumlah_insentif; // Asumsi jumlah per kejadian sama
             return [
                 'event_name' => $eventName,
                 'count' => $items->count(), // Hitung berapa kali terjadi
-                'total_amount' => $items->sum('jumlah_insentif'), // Hitung total nominalnya
+                'individual_amount' => $individualAmount, // Nominal per kejadian
+                'total_amount' => $items->sum('jumlah_insentif'),
             ];
         });
         // --- LOGIKA BARU UNTUK MEMPROSES POTONGAN ---
@@ -89,7 +108,7 @@ class ReportController extends Controller
         ];
         // --- AKHIR LOGIKA BARU ---
 
-        $pdf = PDF::loadView('reports.payslip', compact('payroll','tunjangan', 'attendances', 'overtimes', 'incentives', 'deductionSummary','incentiveSummary'));
+        $pdf = PDF::loadView('reports.payslip', compact('payroll','tunjangan', 'attendances', 'overtimes', 'incentives', 'deductionSummary','incentiveSummary','dosenAttendances'));
 
         return $pdf->stream('slip-gaji-' . $payroll->employee->nama . '-' . $month . '-' . $year . '.pdf');
     }

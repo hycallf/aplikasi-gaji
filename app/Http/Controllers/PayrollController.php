@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\DosenAttendance;
 use App\Models\Deduction;
 use App\Models\Employee;
 use App\Models\Event;
@@ -107,50 +108,88 @@ public function index(Request $request)
                          ->with('success', 'Payroll untuk periode ' . Carbon::create($request->year, $request->month)->isoFormat('MMMM Y') . ' berhasil diproses ulang.');
     }
 
+    // app/Http/Controllers/PayrollController.php
+
     private function calculateAndStorePayroll($month, $year)
     {
-        $employees = Employee::where('status', 'aktif')->get();
+        // Ambil semua karyawan aktif beserta relasi matkul mereka
+        $employees = Employee::with('matkuls')->where('status', 'aktif')->get();
 
         DB::beginTransaction();
         try {
             foreach ($employees as $employee) {
-                // 1. Gaji Pokok (dengan nilai default 0 jika null)
-                $gajiPokok = $employee->gaji_pokok ?? 0;
-                $tunjangan = $employee->tunjangan ?? 0;
+                // Inisialisasi semua komponen gaji dengan 0
+                $gajiPokok = 0;
+                $tunjangan = 0;
+                $totalTransport = 0;
+                $totalLembur = 0;
+                $totalInsentif = 0;
+                $totalPotongan = 0;
 
-                // 2. Hitung Tunjangan Transport
-                $statusesDapatTransport = ['hadir', 'pulang_awal'];
-                $jumlahHariMasuk = Attendance::where('employee_id', $employee->id)
-                    ->whereYear('date', $year)->whereMonth('date', $month)
-                    ->whereIn('status', $statusesDapatTransport)->count();
-                // Pastikan nilai transport tidak null sebelum dikalikan
-                $totalTransport = $jumlahHariMasuk * ($employee->transport ?? 0);
+                // --- LOGIKA PERHITUNGAN BERDASARKAN TIPE KARYAWAN ---
 
-                // 3. Hitung Total Lembur (sum() sudah aman, akan return 0 jika kosong)
+                if ($employee->tipe_karyawan === 'dosen') {
+                // =============== PERHITUNGAN KHUSUS DOSEN ===============
+
+                    $dosenAttendances = DosenAttendance::with('matkul')
+                        ->where('employee_id', $employee->id)
+                        ->where('periode_bulan', $month)->where('periode_tahun', $year)
+                        ->get();
+
+                    // DITAMBAHKAN: Inisialisasi variabel dengan nilai 0
+                    $honorariumSks = 0;
+
+                    $totalPertemuan = $dosenAttendances->sum('jumlah_pertemuan');
+
+                    foreach ($dosenAttendances as $attendance) {
+                        // Pengecekan aman jika relasi matkul tidak ada
+                        if ($attendance->matkul) {
+                            $sks = $attendance->matkul->sks ?? 0;
+                            $honorariumSks += (7500 * $sks * $attendance->jumlah_pertemuan);
+                        }
+                    }
+
+                    // Transport utama dosen
+                    $transportUtama = $totalPertemuan * ($employee->transport ?? 0);
+
+                    $gajiPokok = $employee->gaji_pokok ?? 0;
+                    $tunjangan = $employee->tunjangan ?? 0;
+                    $totalTransport = $transportUtama + $honorariumSks;
+
+                } else {
+                    // =============== PERHITUNGAN UNTUK KARYAWAN BIASA ===============
+                    $gajiPokok = $employee->gaji_pokok ?? 0;
+                    $tunjangan = $employee->tunjangan ?? 0;
+                    $statusesDapatTransport = ['hadir', 'pulang_awal'];
+                    $jumlahHariMasuk = Attendance::where('employee_id', $employee->id)
+                        ->whereYear('date', $year)->whereMonth('date', $month)
+                        ->whereIn('status', $statusesDapatTransport)->count();
+                    $totalTransport = $jumlahHariMasuk * ($employee->transport ?? 0);
+                }
+
+                // Komponen lain yang berlaku untuk semua (lembur, insentif, potongan)
                 $totalLembur = Overtime::where('employee_id', $employee->id)
                     ->whereYear('tanggal_lembur', $year)->whereMonth('tanggal_lembur', $month)
                     ->sum('upah_lembur');
 
-                // 4. Hitung Total Insentif
                 $totalInsentif = Incentive::where('employee_id', $employee->id)
-                    ->whereYear('tanggal_insentif', $year)
-                    ->whereMonth('tanggal_insentif', $month)
+                    ->whereYear('tanggal_insentif', $year)->whereMonth('tanggal_insentif', $month)
                     ->sum('jumlah_insentif');
 
-                // 5. Hitung Total Potongan
                 $totalPotongan = Deduction::where('employee_id', $employee->id)
                     ->whereYear('tanggal_potongan', $year)->whereMonth('tanggal_potongan', $month)
                     ->sum('jumlah_potongan');
 
-                // 6. Hitung Gaji Kotor & Bersih
+                // Final Kalkulasi
                 $gajiKotor = $gajiPokok + $tunjangan + $totalTransport + $totalLembur + $totalInsentif;
                 $gajiBersih = $gajiKotor - $totalPotongan;
 
-                // 7. Simpan atau Update ke tabel payrolls
+                // Simpan atau Update ke tabel payrolls
                 Payroll::updateOrCreate(
                     ['employee_id' => $employee->id, 'periode_bulan' => $month, 'periode_tahun' => $year],
                     [
                         'gaji_pokok' => $gajiPokok,
+                        'total_tunjangan' => $tunjangan,
                         'total_tunjangan_transport' => $totalTransport,
                         'total_upah_lembur' => $totalLembur,
                         'total_insentif' => $totalInsentif,
@@ -163,7 +202,6 @@ public function index(Request $request)
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            // Lemparkan kembali error agar bisa di-debug dengan jelas
             throw $e;
         }
     }
@@ -171,11 +209,22 @@ public function index(Request $request)
 
     public function getDetails(Payroll $payroll, string $type)
     {
+        $payroll->load('employee');
         $year = $payroll->periode_tahun;
         $month = $payroll->periode_bulan;
         $employee_id = $payroll->employee_id;
         $data = [];
         $total = 0;
+
+        // Jika yang diklik adalah Dosen dan tipe detailnya adalah 'transport'
+        if ($payroll->employee->tipe_karyawan === 'dosen' && $type === 'transport') {
+            $dosenAttendances = DosenAttendance::with('matkul')
+                ->where('employee_id', $employee_id)
+                ->where('periode_bulan', $month)->where('periode_tahun', $year)
+                ->get();
+
+            return view('payroll._detail_dosen_modal', compact('payroll', 'dosenAttendances'));
+        }
 
         switch ($type) {
             case 'transport':

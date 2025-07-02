@@ -113,6 +113,11 @@
                             d.year = $('#year').val();
                         }
                     },
+                    dom: '<"flex justify-between items-center mb-4"lf>t<"flex justify-between items-center mt-4"ip>',
+                    columnDefs: [{
+                        className: "text-center", // Class bawaan datatables untuk text-align: center
+                        targets: '_all' // Terapkan ke semua kolom
+                    }],
                     columns: [{
                             data: 'DT_RowIndex',
                             name: 'DT_RowIndex',
