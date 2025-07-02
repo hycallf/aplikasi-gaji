@@ -49,7 +49,9 @@
                                     <th>Tanggal</th>
                                     <th>karyawan</th>
                                     <th>event</th>
-                                    <th>insentif</th>
+                                    <th>upah/event</th>
+                                    <th>berapakali</th>
+                                    <th>total insentif</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -94,8 +96,16 @@
                             name: 'event.nama_event'
                         },
                         {
-                            data: 'jumlah_insentif',
-                            name: 'jumlah_insentif'
+                            data: 'unit_amount',
+                            name: 'unit_amount'
+                        },
+                        {
+                            data: 'quantity',
+                            name: 'quantity'
+                        },
+                        {
+                            data: 'total_amount',
+                            name: 'total_amount'
                         },
                         {
                             data: 'action',

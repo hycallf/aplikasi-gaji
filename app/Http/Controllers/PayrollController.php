@@ -41,6 +41,10 @@ public function index(Request $request)
                 $button = '<button @click.prevent="showDetails('.$row->id.', \'transport\')" class="ml-2 text-blue-500 hover:underline"><i class="fa-solid fa-eye fa-xs"></i></button>';
                 return '<div class="flex items-center justify-end">'.$total.$button.'</div>';
             })
+            ->addColumn('tunjangan', function($row) {
+                $total = 'Rp ' . number_format($row->employee->tunjangan, 0, ',', '.');
+                return $total;
+            })
             // Kolom Lembur dengan Tombol Detail
             ->addColumn('lembur', function($row) {
                 $total = 'Rp ' . number_format($row->total_upah_lembur, 0, ',', '.');
@@ -174,7 +178,7 @@ public function index(Request $request)
 
                 $totalInsentif = Incentive::where('employee_id', $employee->id)
                     ->whereYear('tanggal_insentif', $year)->whereMonth('tanggal_insentif', $month)
-                    ->sum('jumlah_insentif');
+                    ->sum('total_amount');
 
                 $totalPotongan = Deduction::where('employee_id', $employee->id)
                     ->whereYear('tanggal_potongan', $year)->whereMonth('tanggal_potongan', $month)
@@ -254,7 +258,7 @@ public function index(Request $request)
                     ->whereMonth('tanggal_insentif', $month)
                     ->orderBy('tanggal_insentif', 'asc')
                     ->get();
-                $total = $data->sum('jumlah_insentif');
+                $total = $data->sum('total_amount');
                 break;
 
             case 'potongan':

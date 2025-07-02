@@ -21,7 +21,10 @@ return new class extends Migration
             $table->timestamps();
 
             // Kunci unik untuk mencegah duplikasi data
-            $table->unique(['employee_id', 'matkul_id', 'periode_bulan', 'periode_tahun']);
+            $table->unique(
+                ['employee_id', 'matkul_id', 'periode_bulan', 'periode_tahun'],
+                'dosen_attendance_unique' // <-- Nama custom yang singkat
+            );
         });
     }
 

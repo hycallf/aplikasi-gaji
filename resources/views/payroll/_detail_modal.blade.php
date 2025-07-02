@@ -24,6 +24,9 @@
                 @case('insentif')
                     <tr>
                         <th scope="col" class="px-6 py-3">Nama Event</th>
+                        <th scope="col" class="px-6 py-3">Tanggal</th>
+                        <th scope="col" class="px-6 py-3">Upah/Event</th>
+                        <th scope="col" class="px-6 py-3">Trigger</th>
                         <th scope="col" class="px-6 py-3 text-right">Jumlah</th>
                     </tr>
                 @break
@@ -60,7 +63,10 @@
 
                         @case('insentif')
                             <td class="px-6 py-4">{{ $item->event->nama_event }}</td>
-                            <td class="px-6 py-4 text-right">Rp {{ number_format($item->jumlah_insentif, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">{{ $item->tanggal_insentif }}</td>
+                            <td class="px-6 py-4 text-right">Rp {{ number_format($item->unit_amount, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-center">{{ $item->quantity }}</td>
+                            <td class="px-6 py-4 text-right">Rp {{ number_format($item->total_amount, 0, ',', '.') }}</td>
                         @break
 
                         @case('potongan')
@@ -74,7 +80,7 @@
                 @empty
                     <tr>
                         {{-- Sesuaikan colspan agar pas dengan jumlah kolom header --}}
-                        <td colspan="{{ $type == 'transport' || $type == 'insentif' ? 2 : 3 }}"
+                        <td colspan="{{ $type == 'transport' || $type == 'insentif' ? 2 : 4 }}"
                             class="px-6 py-4 text-center">Tidak ada data detail untuk ditampilkan.</td>
                     </tr>
                 @endforelse
@@ -86,18 +92,19 @@
                     <tr>
                         @switch($type)
                             @case('transport')
-                                <td class="px-6 py-3 text-right">Total ({{ $data->count() }} hari)</td>
+                                <td colspan="2" class="px-6 py-3 text-center">Total ({{ $data->count() }} hari)</td>
                                 <td class="px-6 py-3 text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
                             @break
 
                             @case('insentif')
-                                <td class="px-6 py-3 text-right">Total</td>
+                                {{-- Untuk tabel dengan 4 kolom --}}
+                                <td colspan="4" class="px-6 py-3 text-center">Total</td>
                                 <td class="px-6 py-3 text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
                             @break
 
                             @default
                                 {{-- Untuk lembur dan potongan --}}
-                                <td colspan="2" class="px-6 py-3 text-right">Total</td>
+                                <td colspan="2" class="px-6 py-3 text-center">Total</td>
                                 <td class="px-6 py-3 text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
                         @endswitch
                     </tr>

@@ -79,19 +79,20 @@ class ReportController extends Controller
             ->whereMonth('tanggal_insentif', $month)
             ->get();
 
-        $incentiveSummary = $incentives->groupBy('event.nama_event')
-        ->map(function ($items, $eventName) {
+        $incentiveSummary = $incentives->groupBy('event_id')
+        ->map(function ($items) {
 
             $firstItem = $items->first();
+            if (!$firstItem) return null;
             $eventName = $firstItem->event->nama_event ?? 'Insentif Lainnya';
-            $individualAmount = $firstItem->jumlah_insentif; // Asumsi jumlah per kejadian sama
+            $individualAmount = $firstItem->unit_amount; // Asumsi jumlah per kejadian sama
             return [
-                'event_name' => $eventName,
-                'count' => $items->count(), // Hitung berapa kali terjadi
-                'individual_amount' => $individualAmount, // Nominal per kejadian
-                'total_amount' => $items->sum('jumlah_insentif'),
+                'event_name' => $firstItem->event->nama_event ?? 'Insentif Lainnya',
+                'count' => $items->sum('quantity'), // Jumlahkan semua quantity
+                'unit_amount' => $firstItem->unit_amount, // Ambil upah satuan
+                'total_amount' => $items->sum('total_amount'), // Jumlahkan total amount
             ];
-        });
+        })->filter();
         // --- LOGIKA BARU UNTUK MEMPROSES POTONGAN ---
         $allDeductions = Deduction::where('employee_id', $employee_id)
             ->whereYear('tanggal_potongan', $year)->whereMonth('tanggal_potongan', $month)->get();

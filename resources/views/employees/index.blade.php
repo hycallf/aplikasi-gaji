@@ -25,6 +25,7 @@
                                 <th scope="col" class="px-6 py-3">Tipe</th>
                                 <th scope="col" class="px-6 py-3">Jabatan</th>
                                 <th scope="col" class="px-6 py-3">Gaji Pokok</th>
+                                <th scope="col" class="px-6 py-3">Tunjangan</th>
                                 <th scope="col" class="px-6 py-3">Transport</th>
                                 <th scope="col" class="px-6 py-3">Status</th>
                                 <th scope="col" class="px-6 py-3" style="width: 150px;">Aksi</th>
@@ -172,6 +173,10 @@
                         {
                             data: 'gaji_pokok',
                             name: 'gaji_pokok'
+                        },
+                        {
+                            data: 'tunjangan',
+                            name: 'tunjangan'
                         },
                         {
                             data: 'transport',

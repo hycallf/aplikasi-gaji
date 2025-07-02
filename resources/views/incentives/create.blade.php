@@ -54,10 +54,19 @@
                                 multiple="multiple" required></select>
                         </div>
 
-                        <div class="mt-4">
-                            <x-input-label for="jumlah_insentif" value="Jumlah Insentif per Karyawan (Rp)" />
-                            <x-text-input id="jumlah_insentif" class="block mt-1 w-full" type="number"
-                                name="jumlah_insentif" :value="old('jumlah_insentif')" required />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <x-input-label for="unit_amount" value="Upah per Kejadian (Rp)" />
+                                <x-text-input id="unit_amount" class="block mt-1 w-full" type="number"
+                                    name="unit_amount" :value="old('unit_amount')" required placeholder="25000" />
+                                <x-input-error :messages="$errors->get('unit_amount')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="quantity" value="Jumlah Kejadian" />
+                                <x-text-input id="quantity" class="block mt-1 w-full" type="number" name="quantity"
+                                    :value="old('quantity', 1)" required />
+                                <x-input-error :messages="$errors->get('quantity')" class="mt-2" />
+                            </div>
                         </div>
 
                         <div class="mt-4">

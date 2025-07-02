@@ -36,7 +36,9 @@ class IncentiveController extends Controller
                 ->addIndexColumn()
                 ->addColumn('nama_karyawan', fn($row) => $row->employee->nama ?? 'N/A')
                 ->addColumn('nama_event', fn($row) => $row->event->nama_event ?? 'N/A')
-                ->editColumn('jumlah_insentif', fn($row) => 'Rp ' . number_format($row->jumlah_insentif, 0, ',', '.'))
+                ->editColumn('unit_amount', fn($row) => 'Rp ' . number_format($row->unit_amount, 0, ',', '.'))
+                ->editColumn('quantity', fn($row) => number_format($row->quantity, 0, ',', '.'))
+                ->editColumn('total_amount', fn($row) => 'Rp ' . number_format($row->total_amount, 0, ',', '.'))
                 ->addColumn('action', function($row){
                     // Untuk insentif, kita hanya sediakan tombol hapus
                     return view('components.action-button', [
@@ -62,6 +64,7 @@ class IncentiveController extends Controller
         // Log data mentah yang diterima untuk debugging
         Log::info('Incentive Store Request Data:', $request->all());
 
+
         // Validasi
         $validatedData = $request->validate([
             'event_id' => 'required|exists:events,id',
@@ -69,7 +72,8 @@ class IncentiveController extends Controller
             'tanggal_insentif.*' => 'required|date_format:Y-m-d',
             'employee_ids' => 'required|array|min:1',
             'employee_ids.*' => 'exists:employees,id',
-            'jumlah_insentif' => 'required|numeric|min:0',
+            'unit_amount' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:1',
             'deskripsi' => 'nullable|string',
         ], [
             'tanggal_insentif.required' => 'Tanggal insentif wajib dipilih.',
@@ -79,15 +83,24 @@ class IncentiveController extends Controller
         try {
             // Gunakan DB::transaction yang lebih elegan
             DB::transaction(function () use ($validatedData) {
+
+                $totalAmount = $validatedData['unit_amount'] * $validatedData['quantity'];
+
                 foreach ($validatedData['employee_ids'] as $employeeId) {
                     foreach ($validatedData['tanggal_insentif'] as $dateString) {
-                        Incentive::create([
-                            'event_id' => $request->event_id,
-                            'employee_id' => $employeeId,
-                            'tanggal_insentif' => $validDate,
-                            'jumlah_insentif' => $request->jumlah_insentif,
-                            'deskripsi' => $request->deskripsi,
-                        ]);
+                        Incentive::updateOrCreate(
+                            [
+                                'event_id' => $validatedData['event_id'],
+                                'employee_id' => $employeeId,
+                                'tanggal_insentif' => $dateString, // Gunakan $dateString langsung
+                            ],
+                            [
+                                'quantity' => $validatedData['quantity'],
+                                'unit_amount' => $validatedData['unit_amount'],
+                                'total_amount' => $totalAmount, // Gunakan hasil perhitungan
+                                'deskripsi' => $validatedData['deskripsi'],
+                            ]
+                        );
                     }
                 }
             });

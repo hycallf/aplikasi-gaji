@@ -10,8 +10,10 @@ class Incentive extends Model
     protected $fillable = [
         'event_id',
         'employee_id',
-        'tanggal_insentif', // <-- DITAMBAHKAN
-        'jumlah_insentif',
+        'tanggal_insentif',
+        'quantity',
+        'unit_amount',
+        'total_amount',
         'deskripsi',
     ];
 

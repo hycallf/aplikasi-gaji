@@ -250,7 +250,7 @@
 
                                 {{-- Tampilkan detail perhitungan di sebelahnya --}}
                                 <span style="color: #888;">
-                                    (Rp {{ number_format($summary['individual_amount'], 0, ',', '.') }} x
+                                    (Rp {{ number_format($summary['unit_amount'], 0, ',', '.') }} x
                                     {{ $summary['count'] }} kali)
                                 </span>
 

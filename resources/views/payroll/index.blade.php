@@ -54,6 +54,7 @@
                                 <th>Nama</th>
                                 <th>Gaji Pokok</th>
                                 <th class="text-right">Tunj. Transport</th>
+                                <th class="text-right">Tunjangan</th>
                                 <th class="text-right">Upah Lembur</th>
                                 <th class="text-right">Insentif</th>
                                 <th class="text-right">Potongan</th>
@@ -136,6 +137,11 @@
                         {
                             data: 'transport',
                             name: 'total_tunjangan_transport',
+                            className: 'text-right'
+                        },
+                        {
+                            data: 'tunjangan',
+                            name: 'employee.tunjangan',
                             className: 'text-right'
                         },
                         {
