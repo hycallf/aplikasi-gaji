@@ -1,6 +1,6 @@
 # Aplikasi Penggajian Karyawan (Payroll)
 
-Aplikasi ini adalah sistem manajemen penggajian (payroll) internal berbasis web yang dirancang untuk mengelola seluruh siklus penggajian, mulai dari data karyawan, pencatatan kehadiran, hingga pembuatan laporan dan slip gaji.
+Aplikasi ini adalah sistem manajemen penggajian (payroll) internal berbasis web yang dirancang untuk mengelola seluruh siklus penggajian, mulai dari data karyawan, pencatatan kehadiran, hingga pembuatan laporan dan slip gaji. Versi ini mencakup skema penggajian yang berbeda untuk Karyawan Tetap dan Dosen.
 
 ## Lisensi
 
@@ -13,38 +13,44 @@ Copyright (c) [2025] [@hycallf].
 -   **Dashboard Komprehensif:**
 
     -   Menampilkan ringkasan data penting (Total Karyawan, Total User, Total Gaji Dibayarkan).
-    -   Grafik interaktif untuk rekap kehadiran, tren pengeluaran gaji (6 bulan), dan komposisi gaji.
-    -   Widget kalender personal untuk memantau absensi per karyawan secara visual.
+    -   Grafik interaktif untuk rekap kehadiran, tren pengeluaran gaji, dan komposisi gaji.
+    -   Widget kalender personal untuk memantau absensi per karyawan secara visual dengan FullCalendar.js.
     -   Pesan pengingat otomatis untuk operator jika absensi harian belum lengkap.
 
 -   **Manajemen Karyawan & User (Role-based):**
 
-    -   CRUD (Create, Read, Update, Delete) untuk data master karyawan (termasuk data detail dan foto).
+    -   CRUD (Create, Read, Update, Delete) untuk data master karyawan (termasuk data detail, departemen, riwayat pendidikan, dan foto).
     -   CRUD untuk akun login (user) yang terpisah, dengan role `operator`, `karyawan`, dan `dosen`.
-    -   Sistem role manual sederhana yang aman, di mana Operator tidak bisa diedit/dihapus.
-    -   Modal detail karyawan yang asynchronous untuk melihat informasi lengkap tanpa meninggalkan halaman.
+    -   Proses undangan via email yang aman bagi user baru untuk mengatur password mereka sendiri.
+    -   Proteksi untuk role Operator agar tidak bisa diedit/dihapus.
 
--   **Manajemen Kehadiran Harian:**
+-   **Manajemen Kehadiran & Lembur:**
 
-    -   Tampilan input dengan kalender navigasi visual untuk memilih tanggal.
-    -   Pencarian nama karyawan secara asynchronous (tanpa reload halaman) menggunakan HTMX.
-    -   Status kehadiran: Hadir, Sakit, Izin, Telat, Pulang Awal.
-    -   Input keterangan dinamis untuk status tertentu.
-    -   Constraint untuk mencegah input absensi di masa depan atau pada hari libur.
+    -   **Untuk Karyawan:** Input absensi harian dengan kalender navigasi visual.
+    -   **Untuk Dosen:** Input rekap kehadiran bulanan per mata kuliah.
+    -   Fitur input lembur harian dan rekap bulanan.
 
--   **Manajemen Lembur, Insentif & Potongan:**
+-   **Manajemen Event & Insentif:**
 
-    -   Fitur input lembur harian dengan deskripsi dan nominal upah.
-    -   Fitur "Event" untuk mengelola insentif atau bonus non-rutin dengan kemampuan memilih banyak karyawan sekaligus.
-    -   Fitur "Potongan" yang menangani potongan manual (seperti kasbon) dan potongan otomatis (misal: dari status `pulang_awal` di absensi).
+    -   CRUD untuk "Jenis Event" sebagai template.
+    -   Form input insentif yang memungkinkan pemilihan banyak karyawan dan banyak tanggal sekaligus menggunakan Flatpickr.js.
+
+-   **Manajemen Potongan:**
+
+    -   Potongan otomatis dibuat saat karyawan `pulang_awal`.
+    -   CRUD untuk potongan manual (kasbon, denda, dll).
 
 -   **Proses Payroll & Laporan:**
 
-    -   Mesin perhitungan gaji otomatis per periode (bulan/tahun).
-    -   Laporan payroll interaktif menggunakan DataTables (search, sort, pagination).
+    -   Mesin perhitungan gaji otomatis yang menangani dua skema berbeda (gaji tetap untuk karyawan dan honorarium SKS untuk dosen).
 
-    *   Modal asynchronous untuk melihat rincian setiap komponen gaji (transport, lembur, dll) langsung dari tabel laporan.
-    *   Fitur **Cetak Laporan Keseluruhan** dan **Cetak Slip Gaji Individual** dalam format PDF.
+    *   Laporan payroll interaktif menggunakan DataTables.
+    *   Modal asynchronous untuk melihat rincian setiap komponen gaji langsung dari tabel laporan.
+    *   Fitur **Cetak Laporan Keseluruhan** dan **Cetak Slip Gaji Individual** dalam format PDF yang profesional.
+
+-   **Pengaturan Dinamis:**
+
+    -   Fitur "Profil Perusahaan" di mana operator bisa mengubah nama, alamat, dan logo perusahaan yang akan otomatis tampil di semua slip gaji dan laporan.
 
 -   **Teknologi & Tampilan:**
     -   Dibangun dengan **Laravel 12**.
@@ -52,6 +58,7 @@ Copyright (c) [2025] [@hycallf].
     -   Ikon dari **Font Awesome**.
     -   Notifikasi dan dialog konfirmasi modern dengan **SweetAlert2**.
     -   Tabel canggih dengan **Yajra DataTables**.
+    -   Form multiselect dengan **Select2**.
     -   Kalender interaktif dengan **FullCalendar.js**.
     -   Request AJAX yang efisien dengan **HTMX**.
 
