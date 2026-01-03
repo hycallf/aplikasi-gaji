@@ -182,11 +182,13 @@
                 @foreach ($dosenAttendances as $att)
                     <tr class="item">
                         <td>
+                            {{-- FIXED: Menampilkan Rate Dinamis --}}
                             {{ $att->matkul->nama_matkul }} ({{ $att->jumlah_pertemuan }} Pertemuan x
-                            {{ $att->matkul->sks }} SKS x Rp 7.500)
+                            {{ $att->matkul->sks }} SKS x Rp {{ number_format($dosenRatePerSks, 0, ',', '.') }})
                         </td>
                         <td class="text-right">
-                            Rp {{ number_format(7500 * $att->matkul->sks * $att->jumlah_pertemuan, 0, ',', '.') }}
+                            {{-- FIXED: Perhitungan menggunakan variabel $dosenRatePerSks --}}
+                            Rp {{ number_format($dosenRatePerSks * $att->matkul->sks * $att->jumlah_pertemuan, 0, ',', '.') }}
                         </td>
                     </tr>
                 @endforeach
