@@ -9,9 +9,9 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="space-y-6">
 
+                {{-- Kalender Mini Navigasi --}}
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                     @php
-                        // DIUBAH: Menggunakan $selectedDate yang dikirim dari controller
                         $date = $selectedDate;
                         $prevMonth = $date->copy()->subMonth();
                         $nextMonth = $date->copy()->addMonth();
@@ -26,11 +26,10 @@
                                     d="M15 19l-7-7 7-7"></path>
                             </svg>
                         </a>
-                        {{-- DIUBAH: Menggunakan $date (yang berasal dari $selectedDate) --}}
-                        <h4 class="font-bold text-xl text-gray-800 dark:text-gray-200">{{ $date->isoFormat('MMMM Y') }}
+                        <h4 class="font-bold text-xl text-gray-800 dark:text-gray-200">
+                            {{ $date->isoFormat('MMMM Y') }}
                         </h4>
 
-                        {{-- Logika untuk tombol 'Berikutnya' --}}
                         @php
                             $isNextMonthInFuture = $nextMonth->copy()->startOfMonth()->isFuture();
                         @endphp
@@ -68,21 +67,21 @@
                         @endfor
                         @for ($day = 1; $day <= $date->daysInMonth; $day++)
                             @php
-                                // DIUBAH: Menggunakan $date sebagai basis
                                 $currentDayDate = $date->copy()->setDay($day);
                                 $isToday = $currentDayDate->isToday();
                                 $isSelected = $currentDayDate->isSameDay($selectedDate);
                                 $isCompleted = in_array($day, $completedDates);
-                                $isWeekend = $currentDayDate->isSunday();
+                                
+                                // GUNAKAN WORK DAYS DARI SETTINGS
+                                $isNonWorkDay = !in_array($currentDayDate->dayOfWeek, $workDays ?? [1,2,3,4,5,6]);
                                 $isFuture = $currentDayDate->isFuture();
 
-                                $class =
-                                    'h-9 w-9 flex items-center justify-center rounded-full text-sm transition-colors ';
+                                $class = 'h-9 w-9 flex items-center justify-center rounded-full text-sm transition-colors ';
                                 if ($isSelected) {
                                     $class .= 'bg-blue-600 text-white font-bold shadow-lg';
                                 } elseif ($isToday) {
                                     $class .= 'ring-2 ring-blue-500';
-                                } elseif ($isWeekend || $isFuture) {
+                                } elseif ($isNonWorkDay || $isFuture) {
                                     $class .= 'text-gray-400 bg-gray-50 dark:bg-gray-700/50 cursor-not-allowed';
                                 } elseif ($isCompleted) {
                                     $class .= 'bg-green-200 text-green-800 hover:bg-green-300 cursor-pointer';
@@ -91,7 +90,7 @@
                                 }
                             @endphp
                             <div class="flex justify-center items-center">
-                                @if ($isWeekend || $isFuture)
+                                @if ($isNonWorkDay || $isFuture)
                                     <div class="{{ $class }}"><span>{{ $day }}</span></div>
                                 @else
                                     <a href="{{ route('attendances.index', ['date' => $currentDayDate->toDateString()]) }}"
@@ -102,6 +101,7 @@
                     </div>
                 </div>
 
+                {{-- Form Absensi --}}
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="flex flex-wrap justify-between items-center mb-4">
@@ -148,11 +148,8 @@
         </div>
     </div>
 
-    {{-- Script untuk show/hide keterangan tetap dibutuhkan --}}
     @push('scripts')
         <script>
-            // Fungsi untuk menginisialisasi listener pada baris tabel
-            // Fungsi untuk menampilkan/menyembunyikan kolom Keterangan
             function initAttendanceListeners() {
                 const statusSelects = document.querySelectorAll('.attendance-status');
                 statusSelects.forEach(select => {
@@ -162,15 +159,16 @@
                 checkAllStatuses();
             }
 
-            // Fungsi untuk mengecek semua status (tetap sama)
             function checkAllStatuses() {
                 const keteranganHeader = document.querySelector('.keterangan-header');
                 const statusSelects = document.querySelectorAll('.attendance-status');
                 let showKeterangan = false;
+                
                 statusSelects.forEach(select => {
                     const status = select.value;
                     const row = select.closest('tr');
                     const keteranganCell = row.querySelector('.keterangan-cell');
+                    
                     if (status !== 'hadir') {
                         keteranganCell.classList.remove('hidden');
                         showKeterangan = true;
@@ -178,6 +176,7 @@
                         keteranganCell.classList.add('hidden');
                     }
                 });
+                
                 if (showKeterangan) {
                     keteranganHeader.classList.remove('hidden');
                 } else {
@@ -189,7 +188,6 @@
             initAttendanceListeners();
 
             // HTMX akan memicu event ini setelah berhasil menukar konten
-            // Kita perlu menginisialisasi ulang listener kita pada konten yang baru
             document.body.addEventListener('htmx:afterSwap', function(event) {
                 if (event.detail.target.id === 'attendance-table-body') {
                     initAttendanceListeners();

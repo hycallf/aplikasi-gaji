@@ -1,43 +1,119 @@
-<div class="p-6">
-    <h3 class="text-lg font-bold mb-4">Rincian Transport & Honorarium</h3>
-    <table class="w-full text-sm text-left">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-                <th class="px-6 py-3">Keterangan</th>
-                <th class="px-6 py-3">Detail Perhitungan</th>
-                <th class="px-6 py-3 text-right">Sub-total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php $totalPertemuan = $dosenAttendances->sum('jumlah_pertemuan'); @endphp
-            @if ($totalPertemuan > 0)
-                <tr class="border-b">
-                    <td class="px-6 py-4">Transport Utama</td>
-                    <td class="px-6 py-4">{{ $totalPertemuan }} Pertemuan x Rp
-                        {{ number_format($payroll->employee->transport, 0, ',', '.') }}</td>
-                    <td class="px-6 py-4 text-right">Rp
-                        {{ number_format($totalPertemuan * $payroll->employee->transport, 0, ',', '.') }}</td>
+{{-- resources/views/payroll/_detail_dosen_modal.blade.php --}}
+<div class="p-4">
+    <h4 class="font-bold text-lg mb-4 text-gray-800">
+        Detail Transport & Honorarium: {{ $payroll->employee->nama_lengkap }}
+    </h4>
+
+    {{-- Info Settings Rate --}}
+    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center text-sm text-blue-800">
+            <i class="fa-solid fa-info-circle mr-2"></i>
+            <span>Tarif Honorarium: <strong>Rp {{ number_format($dosenRatePerSks, 0, ',', '.') }}</strong> per SKS per
+                pertemuan</span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mata Kuliah</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">SKS</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Pertemuan</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                        Transport<br><small>(per pertemuan)</small></th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        Honorarium<br><small>(SKS)</small></th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                 </tr>
-            @endif
-            @foreach ($dosenAttendances as $attendance)
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
                 @php
-                    $sks = $attendance->matkul->sks ?? 0;
-                    $honor = 7500 * $sks * $attendance->jumlah_pertemuan;
+                    $grandTotalTransport = 0;
+                    $grandTotalHonorarium = 0;
                 @endphp
-                <tr class="border-b">
-                    <td class="px-6 py-4">Honorarium: {{ $attendance->matkul->nama_matkul ?? 'N/A' }}</td>
-                    <td class="px-6 py-4">{{ $attendance->jumlah_pertemuan }} Pertemuan x {{ $sks }} SKS x Rp
-                        7.500</td>
-                    <td class="px-6 py-4 text-right">Rp {{ number_format($honor, 0, ',', '.') }}</td>
+                @foreach ($dosenAttendances as $attendance)
+                    @php
+                        $sks = $attendance->enrollment->matkul->sks ?? 0;
+                        $pertemuan = $attendance->jumlah_pertemuan;
+                        $transportPerPertemuan = $payroll->employee->transport ?? 0;
+                        $totalTransport = $transportPerPertemuan * $pertemuan;
+                        $honorariumSks = $dosenRatePerSks * $sks * $pertemuan;
+                        $totalBaris = $totalTransport + $honorariumSks;
+
+                        $grandTotalTransport += $totalTransport;
+                        $grandTotalHonorarium += $honorariumSks;
+                    @endphp
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {{ $attendance->enrollment->matkul->nama_matkul ?? 'N/A' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-center">
+                            {{ $attendance->kelas ?? '-' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-center font-semibold">
+                            {{ $sks }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-center font-semibold">
+                            {{ $pertemuan }}×
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-center">
+                            Rp {{ number_format($transportPerPertemuan, 0, ',', '.') }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-right">
+                            Rp {{ number_format($honorariumSks, 0, ',', '.') }}
+                        </td>
+                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+                            Rp {{ number_format($totalBaris, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot class="bg-gray-100">
+                <tr class="font-bold">
+                    <td colspan="5" class="px-4 py-3 text-sm text-gray-900 text-right">
+                        Total Transport:
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">
+                        Rp {{ number_format($grandTotalTransport, 0, ',', '.') }}
+                    </td>
+                    <td></td>
                 </tr>
-            @endforeach
-        </tbody>
-        <tfoot class="font-bold bg-gray-100">
-            <tr>
-                <td colspan="2" class="px-6 py-3 text-right">Total Tunjangan Transport & Honorarium</td>
-                <td class="px-6 py-3 text-right">Rp
-                    {{ number_format($payroll->total_tunjangan_transport, 0, ',', '.') }}</td>
-            </tr>
-        </tfoot>
-    </table>
+                <tr class="font-bold">
+                    <td colspan="5" class="px-4 py-3 text-sm text-gray-900 text-right">
+                        Total Honorarium SKS:
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">
+                        Rp {{ number_format($grandTotalHonorarium, 0, ',', '.') }}
+                    </td>
+                    <td></td>
+                </tr>
+                <tr class="font-bold bg-indigo-50">
+                    <td colspan="6" class="px-4 py-3 text-sm text-gray-900 text-right">
+                        GRAND TOTAL:
+                    </td>
+                    <td class="px-4 py-3 text-lg text-indigo-700 text-right">
+                        Rp {{ number_format($grandTotalTransport + $grandTotalHonorarium, 0, ',', '.') }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    {{-- Breakdown Formula --}}
+    <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600">
+        <div class="font-semibold mb-1">📋 Rumus Perhitungan:</div>
+        <ul class="list-disc list-inside space-y-1">
+            <li><strong>Transport</strong> = Transport per Pertemuan × Jumlah Pertemuan</li>
+            <li><strong>Honorarium SKS</strong> = Rp {{ number_format($dosenRatePerSks, 0, ',', '.') }} × SKS × Jumlah
+                Pertemuan</li>
+            <li><strong>Total per Matkul</strong> = Transport + Honorarium SKS</li>
+        </ul>
+        <div class="mt-2 text-blue-600">
+            <i class="fa-solid fa-cog mr-1"></i>
+            <em>Tarif dapat diubah di menu <a href="{{ route('settings.index') }}"
+                    class="underline">Pengaturan</a></em>
+        </div>
+    </div>
 </div>

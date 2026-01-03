@@ -1,12 +1,9 @@
-{{-- Sidebar --}}
-{{-- 1. Tambahkan class untuk posisi fixed dan transisi --}}
+{{-- Sidebar - UPDATED --}}
 <aside class="bg-gray-800 text-gray-300 w-64 fixed inset-y-0 left-0 z-30 transform transition-transform duration-300"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
-    {{-- Container flex utama untuk sidebar --}}
     <div class="flex flex-col h-full">
-
-        {{-- Header Logo (tidak bisa di-scroll) --}}
+        {{-- Header Logo --}}
         <div class="h-16 flex-shrink-0 flex items-center justify-center border-b border-gray-700 px-4">
             <a href="{{ Auth::user()->role === 'operator' ? route('dashboard') : route('user.dashboard') }}"
                 class="flex items-center gap-2">
@@ -15,44 +12,60 @@
             </a>
         </div>
 
-        {{-- 2. BAGIAN NAVIGASI (DIBUAT BISA SCROLL) --}}
+        {{-- Navigation --}}
         <div class="flex-1 overflow-y-auto pb-4 custom-scrollbar">
             <nav class="px-2 py-4 space-y-1">
-                {{-- ... (isi menu navigasi Anda tetap sama) ... --}}
-
                 @if (Auth::user()->role === 'operator')
                     <a href="{{ route('dashboard') }}"
                         class="flex items-center px-4 py-2.5 rounded-md transition duration-200
             {{ request()->routeIs('dashboard') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                        <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
+                        <i class="fa-solid fa-home fa-fw w-5 h-5 mr-3 text-center"></i>
                         Dashboard
                     </a>
+
                     <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Manajemen Karyawan</p>
+
                     <a href="{{ route('users.index') }}"
                         class="flex items-center px-4 py-2.5 rounded-md transition duration-200
                 {{ request()->routeIs('users.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                        <i class="fa-solid fa-user w-5 h-5 mr-3 text-center"></i>
+                        <i class="fa-solid fa-user fa-fw w-5 h-5 mr-3 text-center"></i>
                         Users
                     </a>
+
                     <a href="{{ route('employees.index') }}"
                         class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('employees.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                        <i class="fa-solid fa-address-book w-5 h-5 mr-3 text-center"></i>
-                        Karyawan
+                        <i class="fa-solid fa-address-book fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Karyawan & Dosen
                     </a>
+
+                    {{-- MENU BARU: Akademik --}}
+                    <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Akademik</p>
+
+                    <a href="{{ route('academic-years.index') }}"
+                        class="flex items-center px-4 py-2.5 rounded-md transition duration-200
+                        {{ request()->routeIs('academic-years.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-calendar-alt fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Tahun Ajaran
+                    </a>
+
                     <a href="{{ route('matkuls.index') }}"
-                        class="flex items-center px-4 py-2.5 rounded-md transition duration-200 {{ request()->routeIs('matkuls.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        class="flex items-center px-4 py-2.5 rounded-md transition duration-200
+                        {{ request()->routeIs('matkuls.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                         <i class="fa-solid fa-book fa-fw w-5 h-5 mr-3 text-center"></i>
-                        Manajemen Matkul
+                        Mata Kuliah
                     </a>
+
+                    <a href="{{ route('enrollments.index') }}"
+                        class="flex items-center px-4 py-2.5 rounded-md transition duration-200
+                        {{ request()->routeIs('enrollments.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fa-solid fa-chalkboard-user fa-fw w-5 h-5 mr-3 text-center"></i>
+                        Enrollment Dosen
+                    </a>
+
                     <p class="px-4 pt-4 pb-2 text-xs text-gray-500 uppercase">Kelola Gaji</p>
 
-                    <div x-data="{ open: {{ request()->routeIs('recap.*') || request()->routeIs('attendances.*') || request()->routeIs('overtimes.*') ? 'true' : 'false' }} }">
-                        {{-- Tombol Utama Dropdown --}}
+                    <div x-data="{ open: {{ request()->routeIs('recap.*') || request()->routeIs('attendances.*') || request()->routeIs('overtimes.*') || request()->routeIs('dosen.attendances.*') ? 'true' : 'false' }} }">
                         <button @click="open = !open"
                             class="w-full flex items-center justify-between px-4 py-2.5 rounded-md transition duration-200 hover:bg-gray-700 hover:text-white">
                             <span class="flex items-center">
@@ -67,9 +80,7 @@
                             </svg>
                         </button>
 
-                        {{-- DIUBAH: Konten Sub-menu dengan ikon dan inden --}}
                         <div x-show="open" x-transition class="mt-1 pl-8 space-y-1">
-
                             <a href="{{ route('recap.index') }}"
                                 class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('recap.index') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                                 <i class="fa-solid fa-list-check fa-fw w-5 h-5 mr-3 text-center"></i>
@@ -78,11 +89,11 @@
                             <a href="{{ route('attendances.index') }}"
                                 class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
                                 <i class="fa-solid fa-calendar-day fa-fw w-5 h-5 mr-3 text-center"></i>
-                                Input Absensi
+                                Absensi Karyawan
                             </a>
                             <a href="{{ route('dosen.attendances.index') }}"
                                 class="flex items-center w-full px-4 py-2 rounded-md text-sm {{ request()->routeIs('dosen.attendances.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
-                                <i class="fa-solid fa-chalkboard-user fa-fw w-5 h-5 mr-3 text-center"></i>
+                                <i class="fa-solid fa-graduation-cap fa-fw w-5 h-5 mr-3 text-center"></i>
                                 Absensi Dosen
                             </a>
                             <a href="{{ route('overtimes.index') }}"
@@ -115,7 +126,16 @@
                         <i class="fa-solid fa-calculator fa-fw w-5 h-5 mr-3 text-center"></i>
                         Proses Gaji
                     </a>
+
                     <div class="border-t border-gray-700 mt-4 pt-4">
+                        {{-- MENU BARU: Settings --}}
+                        <a href="{{ route('settings.index') }}"
+                            class="flex items-center px-4 py-2.5 rounded-md
+            {{ request()->routeIs('settings.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
+                            <i class="fa-solid fa-cog fa-fw w-5 h-5 mr-3 text-center"></i>
+                            Pengaturan
+                        </a>
+
                         <a href="{{ route('company.profile.edit') }}"
                             class="flex items-center px-4 py-2.5 rounded-md
             {{ request()->routeIs('company.profile.*') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">
@@ -124,9 +144,7 @@
                         </a>
                     </div>
                 @else
-                    {{-- ///////////// MENU UNTUK KARYAWAN & DOSEN ///////////// --}}
-
-                    {{-- Link Dashboard Karyawan --}}
+                    {{-- MENU UNTUK KARYAWAN & DOSEN --}}
                     <a href="{{ route('user.dashboard') }}"
                         class="flex items-center px-4 py-2.5 rounded-md transition duration-200
                 {{ request()->routeIs('user.dashboard') ? 'bg-gray-900 text-white' : 'hover:bg-gray-700 hover:text-white' }}">

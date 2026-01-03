@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Attendance;
 use App\Models\Overtime;
 use App\Models\Deduction;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,68 @@ class MonthlyRecapController extends Controller
         $employees = Employee::where('tipe_karyawan', 'karyawan')
                          ->where('status', 'aktif')
                          ->orderBy('nama')->get();
-        return view('recap.index', compact('employees'));
+
+        // Ambil data existing untuk ditampilkan di kalender
+        $existingData = null;
+        if ($request->filled(['employee_id', 'month', 'year'])) {
+            $existingData = $this->getExistingData(
+                $request->employee_id,
+                $request->month,
+                $request->year
+            );
+        }
+
+        // Get work days dan non-working days dari settings
+        $workDays = Setting::get('work_days', [1, 2, 3, 4, 5, 6]);
+        $selectedMonth = $request->input('month', date('m'));
+        $selectedYear = $request->input('year', date('Y'));
+        $nonWorkingDays = Setting::getNonWorkingDays($selectedYear, $selectedMonth);
+
+        return view('recap.index', compact('employees', 'existingData', 'workDays', 'nonWorkingDays'));
+    }
+
+    /**
+     * Ambil data absensi yang sudah ada
+     */
+    private function getExistingData($employeeId, $month, $year)
+    {
+        $attendances = Attendance::where('employee_id', $employeeId)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->get()
+            ->groupBy('status');
+
+        $overtime = Overtime::where('employee_id', $employeeId)
+            ->whereMonth('tanggal_lembur', $month)
+            ->whereYear('tanggal_lembur', $year)
+            ->sum('upah_lembur');
+
+        // Kelompokkan tanggal per status
+        $datesByStatus = [
+            'sakit' => [],
+            'izin' => [],
+            'pulang_awal' => []
+        ];
+
+        foreach ($attendances as $status => $records) {
+            if (isset($datesByStatus[$status])) {
+                $datesByStatus[$status] = $records->map(function($attendance) {
+                    return Carbon::parse($attendance->date)->day;
+                })->toArray();
+            }
+        }
+
+        return [
+            'employee_id' => $employeeId,
+            'month' => $month,
+            'year' => $year,
+            'dates_by_status' => $datesByStatus,
+            'total_overtime' => $overtime,
+            'hadir' => $attendances->get('hadir', collect())->count(),
+            'sakit' => count($datesByStatus['sakit']),
+            'izin' => count($datesByStatus['izin']),
+            'pulang_awal' => count($datesByStatus['pulang_awal']),
+        ];
     }
 
     /**
@@ -45,12 +107,28 @@ class MonthlyRecapController extends Controller
         $startDate = Carbon::create($year, $month, 1);
         $daysInMonth = $startDate->daysInMonth;
 
+        // AMBIL SETTINGS
+        $workDays = Setting::get('work_days', [1, 2, 3, 4, 5, 6]);
+        $potonganAmount = Setting::get('pulang_awal_deduction', 10000);
+
         DB::beginTransaction();
         try {
-            // Hapus data absensi & lembur lama untuk karyawan & periode ini
-            Attendance::where('employee_id', $employeeId)->whereMonth('date', $month)->whereYear('date', $year)->delete();
-            Overtime::where('employee_id', $employeeId)->whereMonth('tanggal_lembur', $month)->whereYear('tanggal_lembur', $year)->delete();
-            Deduction::where('employee_id', $employeeId)->whereMonth('tanggal_potongan', $month)->whereYear('tanggal_potongan', $year)->where('sumber', 'absensi')->delete();
+            // Hapus data lama
+            Attendance::where('employee_id', $employeeId)
+                ->whereMonth('date', $month)
+                ->whereYear('date', $year)
+                ->delete();
+
+            Overtime::where('employee_id', $employeeId)
+                ->whereMonth('tanggal_lembur', $month)
+                ->whereYear('tanggal_lembur', $year)
+                ->delete();
+
+            Deduction::where('employee_id', $employeeId)
+                ->whereMonth('tanggal_potongan', $month)
+                ->whereYear('tanggal_potongan', $year)
+                ->where('sumber', 'absensi')
+                ->delete();
 
             $statuses = [
                 'hadir' => $validated['hadir'],
@@ -63,17 +141,17 @@ class MonthlyRecapController extends Controller
             for ($day = 1; $day <= $daysInMonth; $day++) {
                 $currentDate = Carbon::create($year, $month, $day);
 
-                // Lewati hari Minggu
-                if ($currentDate->isSunday()) {
-                    continue;
+                // GUNAKAN SETTING WORK DAYS
+                if (!in_array($currentDate->dayOfWeek, $workDays)) {
+                    continue; // Skip non-working days
                 }
 
                 // Cari status untuk diisi pada hari ini
                 $statusToInsert = null;
-                foreach($statuses as $status => &$count) { // Gunakan reference (&)
+                foreach($statuses as $status => &$count) {
                     if ($count > 0) {
                         $statusToInsert = $status;
-                        $count--; // Kurangi jatah hari untuk status ini
+                        $count--;
                         break;
                     }
                 }
@@ -86,21 +164,21 @@ class MonthlyRecapController extends Controller
                         'status' => $statusToInsert,
                     ]);
 
-                    // Jika pulang awal, buat potongan
+                    // Jika pulang awal, buat potongan dengan amount dari settings
                     if ($statusToInsert === 'pulang_awal') {
                         Deduction::create([
                             'employee_id' => $employeeId,
                             'tanggal_potongan' => $currentDate->toDateString(),
                             'sumber' => 'absensi',
                             'jenis_potongan' => 'Transport',
-                            'jumlah_potongan' => 10000,
+                            'jumlah_potongan' => $potonganAmount,
                             'keterangan' => 'Potongan transport karena pulang awal',
                         ]);
                     }
                 }
             }
 
-            // Jika ada input total lembur, buat satu record lembur
+            // Jika ada input total lembur
             if (!empty($validated['total_lembur']) && $validated['total_lembur'] > 0) {
                 Overtime::create([
                     'employee_id' => $employeeId,
@@ -117,6 +195,10 @@ class MonthlyRecapController extends Controller
             return back()->with('error', 'Gagal menyimpan data rekap: ' . $e->getMessage())->withInput();
         }
 
-        return redirect()->route('recap.index')->with('success', 'Data rekap bulanan berhasil disimpan!');
+        return redirect()->route('recap.index', [
+            'employee_id' => $employeeId,
+            'month' => $month,
+            'year' => $year
+        ])->with('success', 'Data rekap bulanan berhasil disimpan!');
     }
 }

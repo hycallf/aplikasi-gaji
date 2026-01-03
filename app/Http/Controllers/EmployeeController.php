@@ -17,18 +17,24 @@ use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        // Cek jika request datang dari datatables
         if ($request->ajax()) {
-            $data = Employee::latest()->get();
+            $query = Employee::query();
+
+            // Filter berdasarkan tipe jika ada
+            if ($request->filled('tipe')) {
+                $query->where('tipe_karyawan', $request->tipe);
+            }
+
+            $data = $query->latest()->get();
+
             return DataTables::of($data)
-                ->addIndexColumn() // Menambahkan kolom nomor urut
+                ->addIndexColumn()
+                ->addColumn('nama_lengkap', function($row) {
+                    return $row->nama_lengkap; // Menggunakan accessor dari model
+                })
                 ->editColumn('status', function($row){
-                    // Mengubah tampilan kolom status menjadi badge
                     if ($row->status == 'aktif') {
                         return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>';
                     } else {
@@ -40,15 +46,13 @@ class EmployeeController extends Controller
                     }
                 })
                 ->addColumn('action', function($row){
-                    // Menggunakan helper view() untuk me-render komponen Blade
                     $showUrl = route('employees.show', $row->id);
                     $showButton = '<button
                         type="button"
                         @click.prevent="$dispatch(\'open-employee-detail\', { employeeData: await (await fetch(\''.$showUrl.'\')).json() })"
-                        class="inline-flex items-center gap-x-1.5 rounded-md bg-green-100 dark:bg-green-900/50 px-2.5 py-1.5 text-sm font-semibold text-green-700 dark:text-green-300 shadow-sm hover:bg-green-200 dark:hover:bg-green-800 transition-colors">
+                        class="inline-flex items-center gap-x-1.5 rounded-md bg-green-100 px-2.5 py-1.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-200 transition-colors">
                             <i class="fa-solid fa-eye fa-fw"></i>
-                            <span></span>
-                  </button>';
+                      </button>';
 
                     $editButton = view('components.action-button', [
                         'type' => 'edit',
@@ -60,34 +64,28 @@ class EmployeeController extends Controller
                         'route' => route('employees.destroy', $row->id)
                     ])->render();
 
-                    // Gabungkan kedua tombol dalam satu div untuk penataan
                     return '<div class="flex items-center justify-center space-x-2">' . $showButton . $editButton . $deleteButton . '</div>';
                 })
-                ->rawColumns(['action', 'status']) // Kolom yang isinya HTML
+                ->rawColumns(['action', 'status'])
                 ->make(true);
         }
 
         return view('employees.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(Request $request)
     {
-        return view('employees.create');
+        $tipe = $request->get('tipe', 'karyawan');
+        return view('employees.create', compact('tipe'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255', // DIUBAH: menjadi 'nama'
+        $rules = [
+            'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
             'tipe_karyawan' => 'required|in:karyawan,dosen',
-            'gaji_pokok' => 'required|numeric', // DIUBAH: menjadi 'gaji_pokok'
+            'gaji_pokok' => 'required|numeric',
             'transport' => 'required|numeric',
             'tunjangan' => 'required|numeric',
             'departemen' => 'required|string|max:255',
@@ -96,35 +94,43 @@ class EmployeeController extends Controller
             'pendidikan_terakhir' => 'nullable|string',
             'jurusan' => 'nullable|string|max:255',
             'domisili' => 'nullable|string|max:255',
-            // Tambahkan validasi lain sesuai kebutuhan...
-        ]);
+        ];
+
+        // Tambahan validasi khusus dosen
+        if ($request->tipe_karyawan === 'dosen') {
+            $rules['nidn'] = 'nullable|string|max:50|unique:employees,nidn';
+            $rules['gelar_depan'] = 'nullable|string|max:50';
+            $rules['gelar_belakang'] = 'nullable|string|max:100';
+            $rules['status_dosen'] = 'nullable|in:tetap,honorer,luar_biasa';
+        }
+
+        $request->validate($rules);
 
         try {
             DB::beginTransaction();
 
-            // 1. Buat data utama di tabel 'employees'
-            $employee = Employee::create([
-                'nama' => $request->nama,
-                'jabatan' => $request->jabatan,
-                'tipe_karyawan' => $request->tipe_karyawan,
-                'gaji_pokok' => $request->gaji_pokok,
-                'transport' => $request->transport,
-                'tunjangan' => $request->tunjangan,
-                'departemen' => $request->departemen,
+            $employeeData = $request->only([
+                'nama', 'jabatan', 'tipe_karyawan', 'gaji_pokok',
+                'transport', 'tunjangan', 'departemen'
             ]);
+
+            // Tambahkan data khusus dosen jika ada
+            if ($request->tipe_karyawan === 'dosen') {
+                $employeeData['nidn'] = $request->nidn;
+                $employeeData['gelar_depan'] = $request->gelar_depan;
+                $employeeData['gelar_belakang'] = $request->gelar_belakang;
+                $employeeData['status_dosen'] = $request->status_dosen;
+            }
+
+            $employee = Employee::create($employeeData);
 
             $pathFoto = null;
             if ($request->hasFile('foto')) {
-                // --- BAGIAN YANG DIUBAH ---
                 $file = $request->file('foto');
-                // Membuat nama file: udin-sedunia-16893452.jpg
                 $namaFile = Str::slug($request->nama) . '-' . time() . '.' . $file->getClientOriginalExtension();
-                // Simpan file dengan nama baru
                 $pathFoto = $file->storeAs('fotos', $namaFile, 'public');
-                // --- AKHIR PERUBAHAN ---
             }
 
-            // 2. Buat data detail di tabel 'employee_details'
             EmployeeDetail::create([
                 'foto' => $pathFoto,
                 'employee_id' => $employee->id,
@@ -144,36 +150,34 @@ class EmployeeController extends Controller
             return back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage())->withInput();
         }
 
-        return redirect()->route('employees.index')->with('success', 'Karyawan baru berhasil ditambahkan!');
+        return redirect()->route('employees.index')->with('success', ($request->tipe_karyawan === 'dosen' ? 'Dosen' : 'Karyawan') . ' baru berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Employee $employee)
     {
-        // Eager load relasi detail dan user
         $employee->load('detail', 'user');
         return response()->json($employee);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Employee $employee)
     {
         $employee->load('detail');
-        $matkuls = Matkul::orderBy('nama_matkul')->get();
-        return view('employees.edit', compact('employee','matkuls'));
 
+        // Jika dosen, ambil enrollments aktif (bukan matkuls lagi)
+        $enrollments = collect();
+        if ($employee->isDosen()) {
+            $enrollments = $employee->enrollments()
+                ->with(['matkul', 'academicYear'])
+                ->whereHas('academicYear', fn($q) => $q->where('is_active', true))
+                ->get();
+        }
+
+        return view('employees.edit', compact('employee', 'enrollments'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Employee $employee) // DIUBAH: Menggunakan Route Model Binding
+    public function update(Request $request, Employee $employee)
     {
-        $request->validate([
+        $rules = [
             'nama' => ['required', 'string', 'max:255'],
             'jabatan' => ['required', 'string', 'max:255'],
             'tipe_karyawan' => ['required', 'in:karyawan,dosen'],
@@ -189,48 +193,63 @@ class EmployeeController extends Controller
             'jumlah_anak' => ['nullable', 'integer'],
             'riwayat_pendidikan' => ['nullable', 'string'],
             'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-        ]);
-        // Dengan Route Model Binding, $employee sudah berisi data yang benar
+        ];
+
+        // Validasi khusus dosen
+        if ($request->tipe_karyawan === 'dosen') {
+            $rules['nidn'] = 'nullable|string|max:50|unique:employees,nidn,' . $employee->id;
+            $rules['gelar_depan'] = 'nullable|string|max:50';
+            $rules['gelar_belakang'] = 'nullable|string|max:100';
+            $rules['status_dosen'] = 'nullable|in:tetap,honorer,luar_biasa';
+        }
+
+        $request->validate($rules);
+
         try {
             DB::beginTransaction();
 
-            $employeeData = $request->only(['nama', 'jabatan','departemen', 'tipe_karyawan', 'gaji_pokok', 'transport','tunjangan', 'status']);
-            $detailData = $request->only(['tanggal_masuk', 'alamat', 'domisili', 'no_hp', 'status_pernikahan', 'jumlah_anak', 'riwayat_pendidikan']);
+            $employeeData = $request->only([
+                'nama', 'jabatan', 'departemen', 'tipe_karyawan',
+                'gaji_pokok', 'transport', 'tunjangan', 'status'
+            ]);
 
-            // 4. Proses upload foto baru jika ada
+            // Data khusus dosen
+            if ($request->tipe_karyawan === 'dosen') {
+                $employeeData['nidn'] = $request->nidn;
+                $employeeData['gelar_depan'] = $request->gelar_depan;
+                $employeeData['gelar_belakang'] = $request->gelar_belakang;
+                $employeeData['status_dosen'] = $request->status_dosen;
+            } else {
+                // Reset data dosen jika diubah jadi karyawan
+                $employeeData['nidn'] = null;
+                $employeeData['gelar_depan'] = null;
+                $employeeData['gelar_belakang'] = null;
+                $employeeData['status_dosen'] = null;
+            }
+
+            $detailData = $request->only([
+                'tanggal_masuk', 'alamat', 'domisili', 'no_hp',
+                'status_pernikahan', 'jumlah_anak', 'riwayat_pendidikan'
+            ]);
+
             if ($request->hasFile('foto')) {
-                // Hapus foto lama dari storage jika ada
                 if ($employee->detail && $employee->detail->foto) {
                     Storage::disk('public')->delete($employee->detail->foto);
                 }
 
-                // Buat nama file baru dan simpan
                 $file = $request->file('foto');
                 $namaFile = Str::slug($request->nama) . '-' . time() . '.' . $file->getClientOriginalExtension();
                 $pathFoto = $file->storeAs('fotos', $namaFile, 'public');
-
-                // Tambahkan path foto baru ke data detail
                 $detailData['foto'] = $pathFoto;
             }
 
-            // 5. Update data di tabel 'employees'
             $employee->update($employeeData);
-
-            // 6. Update atau buat data di 'employee_details'
             $employee->detail()->updateOrCreate(
-                ['employee_id' => $employee->id], // Cari berdasarkan ini
-                $detailData  // Dan update/buat dengan data ini
+                ['employee_id' => $employee->id],
+                $detailData
             );
 
-            if ($request->tipe_karyawan === 'dosen' && $request->has('matkuls')) {
-                // sync() akan otomatis mengatur relasi di tabel employee_matkul
-                $employee->matkuls()->sync($request->input('matkuls', []));
-            } else {
-                // Jika bukan dosen, hapus semua relasi matkulnya
-                $employee->matkuls()->sync([]);
-            }
-
-            // 7. Update data user yang terhubung (jika ada) agar tetap sinkron
+            // Update user terkait
             if ($employee->user) {
                 $employee->user->update([
                     'name' => $request->nama,
@@ -244,25 +263,18 @@ class EmployeeController extends Controller
             return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())->withInput();
         }
 
-        return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
+        return redirect()->route('employees.index')->with('success', 'Data berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Employee $employee)
     {
         try {
             DB::beginTransaction();
 
-            // Hapus user yang terhubung terlebih dahulu
-            // Ini akan gagal jika ada relasi lain yang melindungi user,
-            // tapi untuk kasus ini seharusnya aman.
             if ($employee->user) {
                 $employee->user->delete();
             }
 
-            // Hapus data employee
             $employee->delete();
 
             DB::commit();
@@ -271,6 +283,6 @@ class EmployeeController extends Controller
             return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
 
-        return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil dihapus.');
+        return redirect()->route('employees.index')->with('success', 'Data berhasil dihapus.');
     }
 }

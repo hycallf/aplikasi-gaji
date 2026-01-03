@@ -17,7 +17,8 @@ class CompanyProfileSeeder extends Seeder
         'nama_perusahaan' => 'STMIK Mercusuar',
         'alamat' => 'Jl. Raya Jatiwaringin No.144, RT.001/RW.008, Jatiwaringin, Kec. Pd. Gede, Kota Bks, Jawa Barat 17411',
         'email_kontak' => 'informasi@mercusuar.ac.id',
-        'no_telepon' => '+628111341579'
+        'no_telepon' => '+628111341579',
+
         ]);
     }
 }

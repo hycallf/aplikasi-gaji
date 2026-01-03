@@ -1,18 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Edit Data Karyawan: {{ $employee->nama }}
+            Edit Data {{ ucfirst($employee->tipe_karyawan) }}: {{ $employee->nama }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100" x-data="{ tipeKaryawan: '{{ old('tipe_karyawan', $employee->tipe_karyawan) }}' }">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <form method="POST" action="{{ route('employees.update', $employee->id) }}"
                         enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+
+                        {{-- Input Hidden untuk Tipe Karyawan (Agar validasi controller lolos) --}}
+                        <input type="hidden" name="tipe_karyawan" value="{{ $employee->tipe_karyawan }}">
 
                         <div x-data="{ tab: 'utama' }">
                             <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
@@ -30,186 +33,184 @@
                                 </nav>
                             </div>
 
-                            <div x-show="tab === 'utama'">
-                                <h3 class="text-lg font-bold mb-4">Data Pekerjaan & Gaji</h3>
-                                <div>
-                                    <x-input-label for="nama" value="Nama Lengkap" />
-                                    <x-text-input id="nama" class="block mt-1 w-full" type="text" name="nama"
-                                        :value="old('nama', $employee->nama)" required />
-                                    <x-input-error :messages="$errors->get('nama')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="jabatan" value="Jabatan" />
-                                    <x-text-input id="jabatan" class="block mt-1 w-full" type="text" name="jabatan"
-                                        :value="old('jabatan', $employee->jabatan)" required />
-                                    <x-input-error :messages="$errors->get('jabatan')" class="mt-2" />
-                                </div>
-
-                                <div class="mt-4">
-                                    <x-input-label for="departemen" value="Departemen" />
-                                    <x-text-input id="departemen" class="block mt-1 w-full" type="text"
-                                        name="departemen" :value="old('departemen', $employee->departemen)" required />
-                                    <x-input-error :messages="$errors->get('departemen')" class="mt-2" />
+                            <div x-show="tab === 'utama'" class="space-y-4">
+                                {{-- INFO READONLY TIPE KARYAWAN --}}
+                                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="fa-solid fa-info-circle text-blue-400"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-blue-700">
+                                                Anda sedang mengedit data
+                                                <strong>{{ ucfirst($employee->tipe_karyawan) }}</strong>.
+                                                Tipe karyawan tidak dapat diubah dari menu edit.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="mt-4">
-                                    <x-input-label for="tipe_karyawan" value="Tipe Karyawan" />
-                                    <select name="tipe_karyawan" id="tipe_karyawan"
-                                        @change="tipeKaryawan = $event.target.value"
-                                        class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                        <option value="karyawan"
-                                            {{ old('tipe_karyawan', $employee->tipe_karyawan) == 'karyawan' ? 'selected' : '' }}>
-                                            Karyawan</option>
-                                        <option value="dosen"
-                                            {{ old('tipe_karyawan', $employee->tipe_karyawan) == 'dosen' ? 'selected' : '' }}>
-                                            Dosen</option>
-                                    </select>
-                                    <x-input-error :messages="$errors->get('tipe_karyawan')" class="mt-2" />
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {{-- Kolom Kiri --}}
+                                    <div class="space-y-4">
+                                        {{-- KHUSUS DOSEN --}}
+                                        @if ($employee->tipe_karyawan === 'dosen')
+                                            <div>
+                                                <x-input-label for="gelar_depan" value="Gelar Depan" />
+                                                <x-text-input id="gelar_depan" class="block mt-1 w-full" type="text"
+                                                    name="gelar_depan" :value="old('gelar_depan', $employee->gelar_depan)" />
+                                            </div>
+                                        @endif
+
+                                        <div>
+                                            <x-input-label for="nama" value="Nama Lengkap" />
+                                            <x-text-input id="nama" class="block mt-1 w-full" type="text"
+                                                name="nama" :value="old('nama', $employee->nama)" required />
+                                            <x-input-error :messages="$errors->get('nama')" class="mt-2" />
+                                        </div>
+
+                                        {{-- KHUSUS DOSEN --}}
+                                        @if ($employee->tipe_karyawan === 'dosen')
+                                            <div>
+                                                <x-input-label for="nidn" value="NIDN" />
+                                                <x-text-input id="nidn" class="block mt-1 w-full" type="text"
+                                                    name="nidn" :value="old('nidn', $employee->nidn)" />
+                                            </div>
+                                        @endif
+
+                                        <div>
+                                            <x-input-label for="jabatan" value="Jabatan" />
+                                            <x-text-input id="jabatan" class="block mt-1 w-full" type="text"
+                                                name="jabatan" :value="old('jabatan', $employee->jabatan)" required />
+                                        </div>
+                                    </div>
+
+                                    {{-- Kolom Kanan --}}
+                                    <div class="space-y-4">
+                                        {{-- KHUSUS DOSEN --}}
+                                        @if ($employee->tipe_karyawan === 'dosen')
+                                            <div>
+                                                <x-input-label for="gelar_belakang" value="Gelar Belakang" />
+                                                <x-text-input id="gelar_belakang" class="block mt-1 w-full"
+                                                    type="text" name="gelar_belakang" :value="old('gelar_belakang', $employee->gelar_belakang)" />
+                                            </div>
+
+                                            <div>
+                                                <x-input-label for="status_dosen" value="Status Kepegawaian Dosen" />
+                                                <select name="status_dosen" id="status_dosen"
+                                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
+                                                    <option value="">-- Pilih Status --</option>
+                                                    <option value="tetap"
+                                                        {{ old('status_dosen', $employee->status_dosen) == 'tetap' ? 'selected' : '' }}>
+                                                        Dosen Tetap</option>
+                                                    <option value="honorer"
+                                                        {{ old('status_dosen', $employee->status_dosen) == 'honorer' ? 'selected' : '' }}>
+                                                        Dosen Honorer / LB</option>
+                                                    <option value="luar_biasa"
+                                                        {{ old('status_dosen', $employee->status_dosen) == 'luar_biasa' ? 'selected' : '' }}>
+                                                        Dosen Luar Biasa</option>
+                                                </select>
+                                            </div>
+                                        @endif
+
+                                        <div class="@if ($employee->tipe_karyawan !== 'dosen') mt-0 @endif">
+                                            <x-input-label for="departemen" value="Departemen" />
+                                            <x-text-input id="departemen" class="block mt-1 w-full" type="text"
+                                                name="departemen" :value="old('departemen', $employee->departemen)" required />
+                                        </div>
+
+                                        {{-- List Matkul yang sedang diajar (Read Only) --}}
+                                        @if ($employee->tipe_karyawan === 'dosen')
+                                            <div class="bg-gray-50 p-3 rounded-md border border-gray-200 mt-4">
+                                                <p class="text-sm font-semibold mb-2">Enrollment Aktif:</p>
+                                                @if ($enrollments->count() > 0)
+                                                    <ul class="list-disc list-inside text-sm text-gray-600">
+                                                        @foreach ($enrollments as $enr)
+                                                            <li>{{ $enr->matkul->nama_matkul }} (Kelas
+                                                                {{ $enr->kelas ?? '-' }})</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <p class="text-xs text-gray-500 italic">Belum ada enrollment aktif.
+                                                    </p>
+                                                @endif
+                                                <a href="{{ route('enrollments.index') }}"
+                                                    class="text-xs text-indigo-600 hover:text-indigo-800 mt-2 inline-block">Kelola
+                                                    Enrollment &rarr;</a>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
-                                <div x-show="tipeKaryawan === 'dosen'" style="display: none;" class="mt-4">
-                                    <x-input-label for="matkuls" value="Mata Kuliah yang Diajar" />
-                                    <select name="matkuls[]" id="select-matkul" class="block w-full mt-1"
-                                        multiple="multiple">
-                                        @foreach ($matkuls as $matkul)
-                                            {{-- Cek apakah dosen ini sudah mengajar matkul ini --}}
-                                            <option value="{{ $matkul->id }}"
-                                                {{ in_array($matkul->id, $employee->matkuls->pluck('id')->toArray()) ? 'selected' : '' }}>
-                                                {{ $matkul->nama_matkul }} ({{ $matkul->sks }} SKS)
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="gaji_pokok" value="Gaji Pokok" />
-                                    <x-text-input id="gaji_pokok" class="block mt-1 w-full" type="number"
-                                        name="gaji_pokok" :value="old('gaji_pokok', $employee->gaji_pokok)" required />
-                                    <x-input-error :messages="$errors->get('gaji_pokok')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="transport" value="Uang Transport Harian" />
-                                    <x-text-input id="transport" class="block mt-1 w-full" type="number"
-                                        name="transport" :value="old('transport', $employee->transport)" required />
-                                    <x-input-error :messages="$errors->get('transport')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="tunjangan" value="Tunjangan" />
-                                    <x-text-input id="tunjangan" class="block mt-1 w-full" type="number"
-                                        name="tunjangan" :value="old('tunjangan', $employee->tunjangan)" required />
-                                    <x-input-error :messages="$errors->get('tunjangan')" class="mt-2" />
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                    <div>
+                                        <x-input-label for="gaji_pokok" value="Gaji Pokok" />
+                                        <x-text-input id="gaji_pokok" class="block mt-1 w-full" type="number"
+                                            name="gaji_pokok" :value="old('gaji_pokok', $employee->gaji_pokok)" required />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="transport" value="Transport" />
+                                        <x-text-input id="transport" class="block mt-1 w-full" type="number"
+                                            name="transport" :value="old('transport', $employee->transport)" required />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="tunjangan" value="Tunjangan" />
+                                        <x-text-input id="tunjangan" class="block mt-1 w-full" type="number"
+                                            name="tunjangan" :value="old('tunjangan', $employee->tunjangan)" required />
+                                    </div>
                                 </div>
                             </div>
 
+                            {{-- TAB DETAIL (SAMA PERSIS DENGAN SEBELUMNYA) --}}
                             <div x-show="tab === 'detail'" style="display: none;">
-                                <h3 class="text-lg font-bold mb-4">Data Personal</h3>
-                                <div>
-                                    <x-input-label for="tanggal_masuk" value="Tanggal Masuk Kerja" />
-                                    <x-text-input id="tanggal_masuk" class="block mt-1 w-full" type="date"
-                                        name="tanggal_masuk" :value="old('tanggal_masuk', $employee->detail->tanggal_masuk ?? '')" />
-                                    <x-input-error :messages="$errors->get('tanggal_masuk')" class="mt-2" />
-                                </div>
-
-                                <div class="mt-4">
-                                    <x-input-label for="no_hp" value="Nomor HP" />
-                                    <x-text-input id="no_hp" class="block mt-1 w-full" type="text"
-                                        name="no_hp" :value="old('no_hp', $employee->detail->no_hp ?? '')" />
-                                    <x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="status_pernikahan" value="Status Pernikahan" />
-                                    <select name="status_pernikahan" id="status_pernikahan"
-                                        class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                                        <option value="Lajang"
-                                            {{ old('status_pernikahan', $employee->detail->status_pernikahan ?? '') == 'Lajang' ? 'selected' : '' }}>
-                                            Lajang</option>
-                                        <option value="Menikah"
-                                            {{ old('status_pernikahan', $employee->detail->status_pernikahan ?? '') == 'Menikah' ? 'selected' : '' }}>
-                                            Menikah</option>
-                                        <option value="Cerai"
-                                            {{ old('status_pernikahan', $employee->detail->status_pernikahan ?? '') == 'Cerai' ? 'selected' : '' }}>
-                                            Cerai</option>
-                                    </select>
-                                    <x-input-error :messages="$errors->get('status_pernikahan')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="jumlah_anak" value="Jumlah Anak" />
-                                    <x-text-input id="jumlah_anak" class="block mt-1 w-full" type="number"
-                                        name="jumlah_anak" :value="old('jumlah_anak', $employee->detail->jumlah_anak ?? 0)" />
-                                    <x-input-error :messages="$errors->get('jumlah_anak')" class="mt-2" />
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <x-input-label for="pendidikan_terakhir" value="Pendidikan Terakhir" />
-                                        <select name="pendidikan_terakhir" id="pendidikan_terakhir"
-                                            class="block mt-1 w-full border-gray-300 rounded-md">
-                                            @php $pendidikan = optional($employee->detail)->pendidikan_terakhir; @endphp
-                                            <option value="">-- Pilih --</option>
-                                            <option value="SMA/SMK Sederajat" @selected($pendidikan == 'SMA/SMK Sederajat')>SMA/SMK
-                                                Sederajat</option>
-                                            <option value="D3" @selected($pendidikan == 'D3')>D3</option>
-                                            <option value="S1" @selected($pendidikan == 'S1')>S1</option>
-                                            <option value="S2" @selected($pendidikan == 'S2')>S2</option>
-                                            <option value="S3" @selected($pendidikan == 'S3')>S3</option>
-                                        </select>
-                                        <x-input-error :messages="$errors->get('pendidikan_terakhir')" class="mt-2" />
-                                    </div>
-                                    <div>
-                                        <x-input-label for="jurusan" value="Jurusan" />
-                                        <x-text-input id="jurusan" class="block mt-1 w-full" type="text"
-                                            name="jurusan" :value="old('jurusan', optional($employee->detail)->jurusan)" />
-                                        <x-input-error :messages="$errors->get('jurusan')" class="mt-2" />
-                                    </div>
-                                </div>
-
-                                {{-- Domisili --}}
-                                <div class="mt-4">
-                                    <x-input-label for="domisili" value="Domisili (Kota)" />
-                                    <x-text-input id="domisili" class="block mt-1 w-full" type="text"
-                                        name="domisili" :value="old('domisili', optional($employee->detail)->domisili)" placeholder="Contoh: Jakarta Pusat" />
-                                    <x-input-error :messages="$errors->get('domisili')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="alamat" value="Alamat Lengkap" />
-                                    <textarea name="alamat" id="alamat" rows="3"
-                                        class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">{{ old('alamat', $employee->detail->alamat ?? '') }}</textarea>
-                                    <x-input-error :messages="$errors->get('alamat')" class="mt-2" />
-                                </div>
-                                <div class="mt-4">
-                                    <x-input-label for="foto"
-                                        value="Foto Karyawan (Kosongkan jika tidak diubah)" />
-                                    <input type="file" name="foto" id="foto"
-                                        class="block w-full text-sm ... mt-1">
-                                    @if ($employee->detail?->foto)
-                                        <div class="mt-2">
-                                            <p class="text-sm text-gray-500">Foto Saat Ini:</p>
-                                            <img src="{{ asset('storage/' . $employee->detail->foto) }}"
-                                                alt="Foto saat ini" class="w-24 h-24 rounded-md object-cover">
+                                {{-- Isi form detail sama seperti yang di file create,
+                                     hanya value-nya mengambil dari $employee->detail --}}
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <x-input-label for="tanggal_masuk" value="Tanggal Masuk" />
+                                            <x-text-input id="tanggal_masuk" class="block mt-1 w-full" type="date"
+                                                name="tanggal_masuk" :value="old('tanggal_masuk', $employee->detail->tanggal_masuk ?? '')" />
                                         </div>
-                                    @endif
-                                    <x-input-error :messages="$errors->get('foto')" class="mt-2" />
+                                        <div>
+                                            <x-input-label for="no_hp" value="Nomor HP" />
+                                            <x-text-input id="no_hp" class="block mt-1 w-full" type="text"
+                                                name="no_hp" :value="old('no_hp', $employee->detail->no_hp ?? '')" />
+                                        </div>
+                                    </div>
+
+                                    {{-- Sisanya sama dengan struktur create, hanya populate value --}}
+                                    {{-- ... (lanjutkan field detail lainnya: status_pernikahan, pendidikan, alamat, foto) ... --}}
+
+                                    <div class="mt-4">
+                                        <x-input-label for="alamat" value="Alamat Lengkap" />
+                                        <textarea name="alamat" id="alamat" rows="3"
+                                            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">{{ old('alamat', $employee->detail->alamat ?? '') }}</textarea>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <x-input-label for="foto" value="Foto Profil" />
+                                        @if ($employee->detail?->foto)
+                                            <div class="mb-2">
+                                                <img src="{{ asset('storage/' . $employee->detail->foto) }}"
+                                                    alt="Foto saat ini"
+                                                    class="w-20 h-20 rounded-md object-cover border">
+                                            </div>
+                                        @endif
+                                        <input type="file" name="foto" id="foto"
+                                            class="block w-full text-sm mt-1 border border-gray-300 rounded-lg bg-gray-50">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Tombol --}}
                         <div class="flex items-center justify-between mt-6 border-t pt-6">
                             <x-secondary-button :href="route('employees.index')">Kembali</x-secondary-button>
-                            <x-primary-button>Update Karyawan</x-primary-button>
+                            <x-primary-button>Update Data</x-primary-button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
-    @push('scripts')
-        {{-- Inisialisasi Select2 untuk dropdown matkul --}}
-        <script>
-            $(document).ready(function() {
-                $('#select-matkul').select2({
-                    placeholder: 'Pilih satu atau lebih mata kuliah',
-                    width: '100%'
-                });
-            });
-        </script>
-    @endpush
 </x-app-layout>

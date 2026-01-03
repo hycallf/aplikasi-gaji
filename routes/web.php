@@ -17,6 +17,9 @@ use App\Http\Controllers\Auth\PasswordSetupController;
 use App\Http\Controllers\MonthlyRecapController;
 use App\Http\Controllers\MatkulController;
 use App\Http\Controllers\DosenAttendanceController;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\DosenEnrollmentController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,7 +39,7 @@ Route::get('/', function () {
     }
 
     // Jika tidak ada yang login, tampilkan halaman welcome
-    return view('welcome');
+    return view('auth/login');
 });
 
 
@@ -87,6 +90,19 @@ Route::middleware(['auth', 'is_operator'])->group(function () {
 
     // DITAMBAHKAN: Route untuk mengupdate insentif spesifik
     Route::resource('incentives', IncentiveController::class);
+
+    // BARU: Settings Routes
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/reset', [SettingController::class, 'reset'])->name('settings.reset');
+
+    Route::resource('academic-years', AcademicYearController::class);
+    Route::post('academic-years/{academicYear}/activate', [AcademicYearController::class, 'activate'])
+         ->name('academic-years.activate');
+
+    Route::resource('enrollments', DosenEnrollmentController::class);
+    Route::get('enrollments/api/enrolled-matkuls', [DosenEnrollmentController::class, 'getEnrolledMatkuls'])
+         ->name('enrollments.enrolled_matkuls');
 
     Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
     Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
