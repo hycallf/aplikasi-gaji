@@ -132,7 +132,7 @@
                             <tr style="border-top: 1px solid #ddd;">
                                 <td style="width: 40%; padding: 8px;">Nama Karyawan</td>
                                 <td style="width: 60%; padding: 8px;"><span class="bold">:
-                                        {{ $payroll->employee->nama }}</span></td>
+                                        {{ $payroll->employee->getNamaLengkapAttribute() }}</span></td>
                             </tr>
                             <tr style="border-top: 1px solid #ddd;">
                                 <td style="padding: 8px;">Jabatan</td>
@@ -318,7 +318,7 @@
                     <div>Diterima oleh,</div>
                     <div style="margin-top: 60px;">
                         <span class="bold" style="border-bottom: 1px solid #333; padding: 0 40px;">
-                            {{ $payroll->employee->nama }}
+                            {{ $payroll->employee->getNamaLengkapAttribute() }}
                         </span>
                     </div>
                     <div>(Karyawan)</div>

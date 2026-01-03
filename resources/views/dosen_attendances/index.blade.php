@@ -143,12 +143,12 @@
 
                                             <div class="flex items-center gap-2">
                                                 <label class="text-sm text-gray-600">Jumlah Pertemuan:</label>
-                                                <x-text-input 
-                                                    type="number" 
+                                                <x-text-input
+                                                    type="number"
                                                     name="pertemuan[{{ $enrollment->id }}]"
                                                     class="w-20 text-center"
                                                     value="{{ $existingAttendances[$enrollment->id]->jumlah_pertemuan ?? 0 }}"
-                                                    min="0" 
+                                                    min="0"
                                                     required />
                                             </div>
                                         </div>

@@ -10,7 +10,7 @@ use App\Models\Payroll;
 use App\Models\DosenAttendance;
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf; // <-- Import DOMPDF
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class ReportController extends Controller
